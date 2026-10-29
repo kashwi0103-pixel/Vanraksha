@@ -1,0 +1,6 @@
+{
+  "name": "ForestGuard AI",
+  "description": "Low-cost forest-stress monitoring and early-warning demonstrator (student prototype, decision-support only).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

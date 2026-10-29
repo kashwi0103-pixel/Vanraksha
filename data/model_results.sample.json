@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "target": "Canopy Water Deficit (NDRE Drop >= 0.12 & Matric Tension >= 50 kPa)",
+    "horizon_days": 14,
+    "trained_on": "2024-05-01 to 2025-10-31 (2 Seasons)",
+    "tested_on": "2026-06-01 to 2026-10-28 (Holdout Season)",
+    "split": "chronological",
+    "n_train": 368,
+    "n_test": 150,
+    "generated_at": "2026-10-28T10:00:00Z"
+  },
+  "models": [
+    {
+      "name": "Baseline A: Single-Threshold Rule (Soil < 22%)",
+      "precision": 0.68,
+      "recall": 0.82,
+      "false_alarms": 14,
+      "missed_events": 4,
+      "lead_time_days": 6,
+      "brier": null
+    },
+    {
+      "name": "Baseline B: Weather Accumulation Rule (VPD + Rain)",
+      "precision": 0.62,
+      "recall": 0.74,
+      "false_alarms": 19,
+      "missed_events": 6,
+      "lead_time_days": 9,
+      "brier": null
+    },
+    {
+      "name": "Model C: Multi-Modal Fusion Tree (Sentinel-2 + In-Situ)",
+      "precision": 0.88,
+      "recall": 0.91,
+      "false_alarms": 4,
+      "missed_events": 2,
+      "lead_time_days": 12,
+      "brier": 0.114
+    }
+  ],
+  "feature_importance": [
+    { "feature": "Soil Matric Suction (45cm root depth)", "value": 0.38 },
+    { "feature": "Sentinel-2 NDRE Red-Edge Anomaly", "value": 0.28 },
+    { "feature": "Vapor Pressure Deficit (VPD 7d avg)", "value": 0.18 },
+    { "feature": "Cumulative Rain Deficit (14d)", "value": 0.11 },
+    { "feature": "Diurnal Canopy Temp Amplitude", "value": 0.05 }
+  ],
+  "predictions": [
+    { "date": "2026-06-15", "risk_score": 0.12, "label": 0 },
+    { "date": "2026-06-30", "risk_score": 0.18, "label": 0 },
+    { "date": "2026-07-15", "risk_score": 0.25, "label": 0 },
+    { "date": "2026-07-30", "risk_score": 0.44, "label": 0 },
+    { "date": "2026-08-15", "risk_score": 0.62, "label": 1 },
+    { "date": "2026-08-30", "risk_score": 0.79, "label": 1 },
+    { "date": "2026-09-15", "risk_score": 0.86, "label": 1 },
+    { "date": "2026-09-30", "risk_score": 0.58, "label": 0 },
+    { "date": "2026-10-15", "risk_score": 0.84, "label": 1 },
+    { "date": "2026-10-28", "risk_score": 0.76, "label": 1 }
+  ],
+  "calibration": [
+    { "bin_mid": 0.1, "observed": 0.08 },
+    { "bin_mid": 0.3, "observed": 0.28 },
+    { "bin_mid": 0.5, "observed": 0.52 },
+    { "bin_mid": 0.7, "observed": 0.69 },
+    { "bin_mid": 0.9, "observed": 0.88 }
+  ],
+  "notes": "ILLUSTRATIVE: Student benchmark evaluation on chronological holdout. Not certified for operational forestry dispatch."
+}
