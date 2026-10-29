@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForest } from '../../../lib/ForestContext';
 import { StatusBadge } from '../../StatusBadge';
 import { SimulatedDataBadge } from '../../SimulatedDataBadge';
@@ -16,8 +16,68 @@ import {
   Activity
 } from 'lucide-react';
 
+const API_BASE = (
+  import.meta.env.VITE_API_BASE_URL || ''
+).replace(/\/$/, '');
+
+interface ApiSummary {
+  total_alerts: number;
+  alert_counts: Record<string, number>;
+}
+
+interface ApiObservation {
+  id: number;
+  region_id: number;
+  observation_month: string;
+  ndvi: number | null;
+  ndmi: number | null;
+  rainfall_mm: number | null;
+  temperature_c: number | null;
+}
+
 export const OverviewTab: React.FC = () => {
   const { currentDay, status, evaluation, dayIndex, dataset } = useForest();
+  const [apiSummary, setApiSummary] = useState<ApiSummary | null>(null);
+const [apiObservations, setApiObservations] = useState<ApiObservation[]>([]);
+const [apiLoading, setApiLoading] = useState(true);
+const [apiError, setApiError] = useState('');
+
+useEffect(() => {
+  if (!API_BASE) {
+    setApiError('API URL is not configured.');
+    setApiLoading(false);
+    return;
+  }
+
+  const loadApiData = async () => {
+    try {
+      setApiLoading(true);
+      setApiError('');
+
+      const [summaryResponse, observationsResponse] = await Promise.all([
+        fetch(`${API_BASE}/summary`),
+        fetch(`${API_BASE}/observations?region_id=1&limit=115&offset=0`),
+      ]);
+
+      if (!summaryResponse.ok || !observationsResponse.ok) {
+        throw new Error('Backend request failed.');
+      }
+
+      const summary: ApiSummary = await summaryResponse.json();
+      const observations: ApiObservation[] =
+        await observationsResponse.json();
+
+      setApiSummary(summary);
+      setApiObservations(observations);
+    } catch {
+      setApiError('Could not load backend data. Please retry later.');
+    } finally {
+      setApiLoading(false);
+    }
+  };
+
+  loadApiData();
+}, []);
   const fhi = evaluation.forestHealthIndex;
 
   // Selected study region state
@@ -54,6 +114,123 @@ export const OverviewTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Connected backend data — monthly observations */}
+<div className="glass-card p-6 border border-white/10 space-y-4">
+  <div className="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h3 className="text-lg font-heading font-bold text-white">
+        Vanraksha Data Connection
+      </h3>
+      <p className="text-xs font-mono text-[#8A9A92] mt-1">
+        Uttarakhand · Monthly satellite and weather records
+      </p>
+    </div>
+
+    <span className={`text-xs font-mono ${
+      apiError ? 'text-[#E5533D]' :
+      apiLoading ? 'text-[#F5B841]' : 'text-[#2ECC71]'
+    }`}>
+      {apiError ? 'Connection issue' :
+       apiLoading ? 'Loading…' : 'Backend connected'}
+    </span>
+  </div>
+
+  {apiError ? (
+    <p className="text-sm text-[#E5533D]">{apiError}</p>
+  ) : apiLoading ? (
+    <p className="text-sm text-[#8A9A92]">
+      Loading verified monthly records…
+    </p>
+  ) : (
+    <>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {[
+          ['Total records', apiSummary?.total_alerts ?? 0],
+          ['Green', apiSummary?.alert_counts?.Green ?? 0],
+          ['Yellow', apiSummary?.alert_counts?.Yellow ?? 0],
+          ['Orange', apiSummary?.alert_counts?.Orange ?? 0],
+          ['Red', apiSummary?.alert_counts?.Red ?? 0],
+        ].map(([label, value]) => (
+          <div
+            key={label}
+            className="rounded-lg bg-white/[0.03] border border-white/10 p-3"
+          >
+            <span className="block text-[10px] font-mono uppercase text-[#8A9A92]">
+              {label}
+            </span>
+            <span className="block mt-1 text-2xl font-mono font-bold text-white">
+              {value}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3">
+        <span className="text-xs font-mono text-[#8A9A92]">
+          Monthly observations received
+        </span>
+        <span className="text-sm font-mono text-[#2ECC71]">
+          {apiObservations.length}
+        </span>
+      </div>
+
+      {apiObservations.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            {
+              label: 'Latest month',
+              value: apiObservations
+                .map(o => o.observation_month)
+                .filter(Boolean)
+                .sort()
+                .at(-1) ?? 'Unavailable',
+            },
+            {
+              label: 'Latest NDVI',
+              value: (() => {
+                const o = [...apiObservations]
+                  .filter(o => o.ndvi != null)
+                  .sort((a, b) =>
+                    b.observation_month.localeCompare(a.observation_month)
+                  )[0];
+                return o ? o.ndvi!.toFixed(3) : 'Unavailable';
+              })(),
+            },
+            {
+              label: 'Latest NDMI',
+              value: (() => {
+                const o = [...apiObservations]
+                  .filter(o => o.ndmi != null)
+                  .sort((a, b) =>
+                    b.observation_month.localeCompare(a.observation_month)
+                  )[0];
+                return o ? o.ndmi!.toFixed(3) : 'Unavailable';
+              })(),
+            },
+          ].map(item => (
+            <div
+              key={item.label}
+              className="rounded-lg bg-white/[0.02] border border-white/5 p-3"
+            >
+              <span className="block text-[10px] font-mono uppercase text-[#8A9A92]">
+                {item.label}
+              </span>
+              <span className="block mt-1 text-white font-mono font-bold">
+                {item.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="text-[11px] text-[#8A9A92]">
+        Screening indicators only; these records do not independently confirm
+        forest damage or fire. Monthly data is separate from the simulated
+        daily telemetry below.
+      </p>
+    </>
+  )}
+</div>
       {/* Top Banner: Selected Region & Latest Available Observation */}
       <div className="glass-card p-6 border border-white/10 relative overflow-hidden">
         <div 
