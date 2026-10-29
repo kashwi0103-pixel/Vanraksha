@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+
 import { useForest } from '../../../lib/ForestContext';
 import { 
   LineChart, 
