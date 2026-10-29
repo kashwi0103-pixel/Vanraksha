@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { SimulatedDataBadge } from '../components/SimulatedDataBadge';
 import { 
   Cpu, 
@@ -11,76 +11,63 @@ import {
   Sun, 
   AlertTriangle, 
   ShieldAlert, 
-  Check, 
-  DollarSign, 
   Terminal, 
   Layers, 
   Wrench,
   HelpCircle,
-  Zap
+  Zap,
+  Activity,
+  CheckCircle2
 } from 'lucide-react';
 
-interface BomItem {
-  id: string;
-  name: string;
-  minPrice: number;
-  maxPrice: number;
-  category: 'core' | 'optional';
+interface PinMapping {
+  espPin: string;
+  sensorPin: string;
+  sensorName: string;
+  type: string;
+  voltage: string;
   description: string;
-  included: boolean;
 }
 
 export const HardwareSection: React.FC = () => {
   // Wire highlight state
   const [hoveredWire, setHoveredWire] = useState<string | null>(null);
 
-  // Optional parts BOM toggles
-  const [optionalParts, setOptionalParts] = useState<Record<string, boolean>>({
-    microsd: false,
-    bme280: false,
-    solar: false,
-    raingauge: false,
-    secondNode: false,
-  });
-
-  const toggleOptional = (id: string) => {
-    setOptionalParts((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  // Base Core BOM Items in INR
-  const coreBom = [
-    { name: 'ESP32 Development Board (38-pin)', min: 250, max: 500, note: 'Dual-core Xtensa LX6, 3.3V logic, deep-sleep capable' },
-    { name: 'Capacitive Soil Moisture Sensor v1.2', min: 100, max: 250, note: 'Corrosion-resistant analog output, 3.3V compliant' },
-    { name: 'DHT22 / AM2302 Temp & Humidity Sensor', min: 150, max: 350, note: 'Single-bus digital output with pull-up resistor' },
-    { name: 'Jumper Wires & Mini Breadboard / Perfboard', min: 100, max: 200, note: 'Silicone-insulated AWG24 test jumpers' },
-    { name: '5V USB Power / Li-Po Battery Cable', min: 100, max: 250, note: 'Micro-USB power harness or 3.7V JST adapter' },
-    { name: 'Weatherproof IP65 Prototype Enclosure', min: 150, max: 400, note: 'ABS junction box with cable glands' },
+  // Pinout connection specifications
+  const pinMappings: PinMapping[] = [
+    {
+      espPin: '3V3',
+      sensorPin: 'VCC (Pin 1)',
+      sensorName: 'Capacitive Soil & DHT22',
+      type: 'Power Rail',
+      voltage: '3.3V DC',
+      description: 'Regulated low-noise 3.3V supply. Shared bus for both telemetry sensors.',
+    },
+    {
+      espPin: 'GND',
+      sensorPin: 'GND (Pin 2 / Pin 4)',
+      sensorName: 'Capacitive Soil & DHT22',
+      type: 'Common Ground',
+      voltage: '0V Ref',
+      description: 'Unified ground plane to prevent ground loop offsets on analog readings.',
+    },
+    {
+      espPin: 'GPIO34',
+      sensorPin: 'AOUT (Analog Out)',
+      sensorName: 'Capacitive Soil v1.2',
+      type: 'Analog Input (ADC1_CH6)',
+      voltage: '0 – 3.0V',
+      description: 'Input-only low-noise ADC channel. Reads 1350 (saturated wet) to 2850 (air-dry).',
+    },
+    {
+      espPin: 'GPIO4',
+      sensorPin: 'DATA (Pin 2)',
+      sensorName: 'DHT22 / AM2302',
+      type: 'Single-Bus Digital',
+      voltage: '3.3V Logic',
+      description: 'Bidirectional digital pulse stream with 10kΩ pull-up resistor to 3.3V rail.',
+    },
   ];
-
-  // Optional Upgrade Chips in INR
-  const optionalBom = [
-    { id: 'microsd', name: 'MicroSD SPI Datalogger Module', min: 200, max: 450, note: 'Offline backup logging for disconnected canopy sites' },
-    { id: 'bme280', name: 'BME280 Precision I2C Barometer', min: 280, max: 550, note: 'Vapor pressure deficit & barometric altitude estimation' },
-    { id: 'solar', name: '2W Solar Panel + TP4056 Harvester', min: 450, max: 850, note: 'Autonomous daylight battery float charging' },
-    { id: 'raingauge', name: 'Tipping-Bucket Pulse Rain Gauge', min: 650, max: 1200, note: 'Ground-truth micro-precipitation recording (0.2mm/tip)' },
-    { id: 'secondNode', name: '2nd Catchment Node (ESP32-LoRa)', min: 700, max: 1400, note: 'Paired node for spatial gradient cross-checking' },
-  ];
-
-  // Calculate dynamic totals
-  const coreTotalMin = coreBom.reduce((sum, item) => sum + item.min, 0); // 850
-  const coreTotalMax = coreBom.reduce((sum, item) => sum + item.max, 0); // 2050
-
-  const { totalMin, totalMax } = useMemo(() => {
-    let min = coreTotalMin;
-    let max = coreTotalMax;
-    optionalBom.forEach((opt) => {
-      if (optionalParts[opt.id]) {
-        min += opt.min;
-        max += opt.max;
-      }
-    });
-    return { totalMin: min, totalMax: max };
-  }, [optionalParts, coreTotalMin, coreTotalMax]);
 
   return (
     <section id="hardware" className="py-16 scroll-mt-24">
@@ -95,11 +82,11 @@ export const HardwareSection: React.FC = () => {
               <SimulatedDataBadge variant="pill" />
             </div>
             <h2 className="text-3xl sm:text-4xl font-heading font-bold text-white tracking-tight">
-              Hardware Architecture & BOM
+              Hardware Architecture & Wiring
             </h2>
           </div>
           <p className="text-xs font-mono text-[#8A9A92]">
-            Low-Cost Student Node · Sub-₹1,700 Core Build
+            In-Situ Catchment Node · Low-Power ESP32-WROOM Architecture
           </p>
         </div>
 
@@ -114,21 +101,21 @@ export const HardwareSection: React.FC = () => {
                 CRITICAL ELECTRICAL SAFETY REQUIREMENT:
               </span>
               <span className="text-white/90">
-                Always verify sensor module supply rails. <strong>Never feed &gt;3.3 V into ESP32 ADC or GPIO pins.</strong> Capacitive sensor modules must be powered from the 3.3V rail or stepped down with a resistive divider to avoid permanent silicon damage.
+                Always verify sensor module supply rails. <strong>Never feed &gt;3.3 V into ESP32 ADC or GPIO pins.</strong> Capacitive sensor modules must be powered strictly from the 3.3V rail to prevent ADC saturation and permanent silicon breakdown.
               </span>
             </div>
           </div>
           <span className="px-2.5 py-1 rounded-full bg-[#E5533D]/20 text-white font-mono text-[10px] uppercase font-bold shrink-0">
-            3.3V Limit
+            3.3V Rail Limit
           </span>
         </div>
 
-        {/* 2-COLUMN LAYOUT: INTERACTIVE WIRING DIAGRAM & BOM TABLE */}
+        {/* 2-COLUMN LAYOUT: INTERACTIVE WIRING DIAGRAM & PIN SPECIFICATIONS */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
           {/* ========================================================= */}
-          {/* COLUMN 1: INTERACTIVE SVG WIRING DIAGRAM (6 Cols) */}
+          {/* COLUMN 1: INTERACTIVE SVG WIRING DIAGRAM (7 Cols) */}
           {/* ========================================================= */}
-          <div className="lg:col-span-6 glass-card p-6 border border-white/10 flex flex-col justify-between">
+          <div className="lg:col-span-7 glass-card p-6 border border-white/10 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] mb-3">
                 <div className="flex items-center gap-2 text-xs font-mono text-[#8A9A92] uppercase">
@@ -181,7 +168,7 @@ export const HardwareSection: React.FC = () => {
                       ESP32-WROOM
                     </text>
                     <text x="65" y="86" fill="#8A9A92" fontSize="8" fontFamily="JetBrains Mono" textAnchor="middle">
-                      Dual-Core Wi-Fi/BLE
+                      Dual-Core Xtensa LX6
                     </text>
 
                     {/* Antenna Trace */}
@@ -329,107 +316,89 @@ export const HardwareSection: React.FC = () => {
                 <span>Example Serial CSV Output (115200 Baud):</span>
               </div>
               <div className="p-2.5 rounded-lg bg-[#040C07] border border-white/5 font-mono text-[11px] text-[#B6F36A] overflow-x-auto">
+                <code>timestamp,soil_raw,temp_c,humidity_pct,status</code><br />
                 <code>2026-10-28T12:00:00Z,2180,27.8,54.2,OK</code>
               </div>
             </div>
           </div>
 
           {/* ========================================================= */}
-          {/* COLUMN 2: BOM TABLE & OPTIONAL UPGRADE CHIPS (6 Cols) */}
+          {/* COLUMN 2: HARDWARE SPECIFICATIONS & PINOUT TABLE (5 Cols) */}
           {/* ========================================================= */}
-          <div className="lg:col-span-6 glass-card p-6 border border-white/10 flex flex-col justify-between">
+          <div className="lg:col-span-5 glass-card p-6 border border-white/10 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] mb-4">
                 <div className="flex items-center gap-2 text-xs font-mono text-[#8A9A92] uppercase">
                   <Wrench size={14} className="text-[#2ECC71]" />
-                  <span>Bill of Materials (BOM in INR)</span>
+                  <span>Pin Interconnect Specifications</span>
                 </div>
-                <span className="text-[10px] font-mono text-[#8A9A92]">
-                  Indicative, not live quotes
+                <span className="text-[10px] font-mono text-[#2ECC71]">
+                  Direct Wiring
                 </span>
               </div>
 
-              {/* Total Animated Counter Box */}
-              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 mb-4 flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] font-mono text-[#8A9A92] uppercase block">
-                    Estimated Node Unit Build:
-                  </span>
-                  <div className="text-2xl sm:text-3xl font-heading font-bold text-white">
-                    ₹{totalMin.toLocaleString()} – ₹{totalMax.toLocaleString()}
-                  </div>
-                </div>
-                <div className="text-right text-[11px] font-mono text-[#8A9A92]">
-                  <span className="text-[#B6F36A] font-semibold block">Target: &lt; ₹1,700</span>
-                  <span>Core: ₹700–₹1,700</span>
-                </div>
-              </div>
-
-              {/* Core BOM Table */}
-              <div className="space-y-2 mb-5">
-                <div className="text-[11px] font-mono text-[#8A9A92] uppercase font-semibold">
-                  Core Mandatory Components:
-                </div>
-                {coreBom.map((item) => (
+              {/* Pin Mappings Table */}
+              <div className="space-y-2.5 mb-6">
+                {pinMappings.map((pin) => (
                   <div
-                    key={item.name}
-                    className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs"
+                    key={pin.espPin}
+                    className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors"
                   >
-                    <div>
-                      <div className="text-white font-medium">{item.name}</div>
-                      <div className="text-[10px] text-[#8A9A92] font-sans">{item.note}</div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-white/10 text-white font-mono font-bold text-xs">
+                          {pin.espPin}
+                        </span>
+                        <span className="text-white/40">&rarr;</span>
+                        <span className="text-xs font-mono text-[#B6F36A] font-semibold">
+                          {pin.sensorPin}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-[#8A9A92]">
+                        {pin.voltage}
+                      </span>
                     </div>
-                    <div className="text-right font-mono font-semibold text-[#B6F36A] shrink-0 pl-3">
-                      ₹{item.min} – ₹{item.max}
+
+                    <div className="text-xs text-white font-medium mb-0.5">
+                      {pin.sensorName} <span className="text-[11px] text-[#8A9A92]">({pin.type})</span>
                     </div>
+
+                    <p className="text-[11px] font-sans text-[#8A9A92] leading-snug">
+                      {pin.description}
+                    </p>
                   </div>
                 ))}
               </div>
 
-              {/* Optional Upgrades Checkable List */}
-              <div className="space-y-2">
-                <div className="text-[11px] font-mono text-[#8A9A92] uppercase font-semibold flex items-center justify-between">
-                  <span>Optional Upgrade Add-Ons:</span>
-                  <span className="text-[10px] text-[#8A9A92]">Click checkbox to simulate</span>
-                </div>
+              {/* Node Architecture Features */}
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-2.5">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-white font-bold block">
+                  Edge Node Operating Parameters
+                </span>
 
-                {optionalBom.map((opt) => {
-                  const isChecked = optionalParts[opt.id];
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => toggleOptional(opt.id)}
-                      className={`w-full p-2.5 rounded-lg border text-left flex items-center justify-between transition-all ${
-                        isChecked
-                          ? 'bg-[#2ECC71]/15 border-[#2ECC71]/40 text-white'
-                          : 'bg-white/[0.01] border-white/5 text-[#8A9A92] hover:bg-white/[0.03]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                          isChecked ? 'bg-[#2ECC71] border-[#2ECC71] text-[#06120C]' : 'border-white/20'
-                        }`}>
-                          {isChecked && <Check size={12} strokeWidth={3} />}
-                        </div>
-                        <div>
-                          <div className={`text-xs font-medium ${isChecked ? 'text-white' : 'text-[#8A9A92]'}`}>
-                            {opt.name}
-                          </div>
-                          <div className="text-[10px] text-[#8A9A92] font-sans">{opt.note}</div>
-                        </div>
-                      </div>
-                      <div className="text-right font-mono text-xs font-semibold text-[#B6F36A] shrink-0 pl-3">
-                        +₹{opt.min}–₹{opt.max}
-                      </div>
-                    </button>
-                  );
-                })}
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                  <div className="p-2 rounded bg-black/30 border border-white/5">
+                    <span className="text-[10px] text-[#8A9A92] block">Telemetry Duty:</span>
+                    <span className="text-white font-bold">15 min Deep Sleep</span>
+                  </div>
+                  <div className="p-2 rounded bg-black/30 border border-white/5">
+                    <span className="text-[10px] text-[#8A9A92] block">Ingress Rating:</span>
+                    <span className="text-white font-bold">IP65 Weatherproof</span>
+                  </div>
+                  <div className="p-2 rounded bg-black/30 border border-white/5">
+                    <span className="text-[10px] text-[#8A9A92] block">ADC Calibration:</span>
+                    <span className="text-[#2ECC71] font-bold">1350–2850 ADC</span>
+                  </div>
+                  <div className="p-2 rounded bg-black/30 border border-white/5">
+                    <span className="text-[10px] text-[#8A9A92] block">Mesh Uplink:</span>
+                    <span className="text-[#3498DB] font-bold">868 MHz LoRa / WiFi</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="mt-4 pt-3 border-t border-white/[0.08] text-[11px] font-mono text-[#8A9A92]">
-              Components readily available via Indian domestic electronics vendors (Robu.in, ElectronicsComp, Robocraze).
+              Corrosion-resistant capacitive probe avoids DC electrolysis wear inherent in legacy resistive prongs.
             </div>
           </div>
         </div>

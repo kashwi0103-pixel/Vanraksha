@@ -73,8 +73,8 @@ export const OTHER_PAGES: NavSection[] = [
   },
   {
     id: 'hardware',
-    label: 'Hardware & BOM',
-    shortDescription: 'Interactive ESP32 wiring & component costs',
+    label: 'Hardware',
+    shortDescription: 'Interactive ESP32 wiring & pinout architecture',
   },
   {
     id: 'roadmap',

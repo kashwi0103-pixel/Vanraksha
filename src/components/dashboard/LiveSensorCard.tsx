@@ -6,7 +6,7 @@ export const LiveSensorCard: React.FC = () => {
   const { liveTick, isLiveTickActive, toggleLiveTick } = useForest();
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
-  const terminalEndRef = useRef<HTMLDivElement>(null);
+  const terminalContainerRef = useRef<HTMLDivElement>(null);
 
   // Append new CSV tick to scrolling serial log
   useEffect(() => {
@@ -19,10 +19,10 @@ export const LiveSensorCard: React.FC = () => {
     }
   }, [liveTick]);
 
-  // Auto-scroll terminal to bottom
+  // Auto-scroll ONLY the terminal box internally (never scroll the browser window)
   useEffect(() => {
-    if (terminalEndRef.current) {
-      terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (terminalContainerRef.current) {
+      terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight;
     }
   }, [terminalLogs]);
 
@@ -177,6 +177,7 @@ export const LiveSensorCard: React.FC = () => {
 
         {/* Terminal screen container */}
         <div 
+          ref={terminalContainerRef}
           tabIndex={0}
           role="region"
           aria-label="Serial CSV Terminal Output"
@@ -194,7 +195,6 @@ export const LiveSensorCard: React.FC = () => {
               </div>
             ))
           )}
-          <div ref={terminalEndRef} />
         </div>
       </div>
     </div>
