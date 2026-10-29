@@ -179,6 +179,95 @@ useEffect(() => {
 
   return (
     <div className="space-y-6">
+      {/* Live Monthly Screening Alerts */}
+<div className="glass-card p-6 border border-white/10">
+  <div className="flex items-center gap-2 mb-2">
+    <Database size={16} className="text-[#2ECC71]" />
+    <h3 className="text-lg font-heading font-bold text-white">
+      Live Monthly Screening Alerts
+    </h3>
+  </div>
+
+  <p className="text-xs text-[#8A9A92] mb-4">
+    Monthly statewide vegetation screening records retrieved from the live API.
+    These are screening indicators, not confirmed forest damage or fire detections.
+  </p>
+
+  {alertsLoading ? (
+    <p className="text-sm text-[#8A9A92]">Loading alerts…</p>
+  ) : alertsError ? (
+    <p className="text-sm text-[#E5533D]">
+      Could not load alerts: {alertsError}
+    </p>
+  ) : (
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
+        {[
+          { label: 'Green', color: '#2ECC71' },
+          { label: 'Yellow', color: '#F5B841' },
+          { label: 'Orange', color: '#FB923C' },
+          { label: 'Red', color: '#E5533D' },
+          { label: 'Insufficient satellite data', color: '#94A3B8' },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="rounded-xl p-3 bg-white/[0.03] border border-white/10"
+          >
+            <div
+              className="text-2xl font-bold"
+              style={{ color: item.color }}
+            >
+              {liveAlerts.filter(
+                (alert) => alert.alert_level === item.label
+              ).length}
+            </div>
+            <div className="text-[10px] text-[#8A9A92] mt-1">
+              {item.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-xs font-mono">
+          <thead>
+            <tr className="border-b border-white/10 text-[#8A9A92]">
+              <th className="p-3">Alert level</th>
+              <th className="p-3">Observation ID</th>
+              <th className="p-3">Reason</th>
+              <th className="p-3">Generated at</th>
+            </tr>
+          </thead>
+          <tbody>
+            {liveAlerts.map((alert) => (
+              <tr
+                key={alert.id}
+                className="border-b border-white/5 text-[#BAC7C0]"
+              >
+                <td className="p-3 font-semibold">
+                  {alert.alert_level}
+                </td>
+                <td className="p-3">{alert.observation_id}</td>
+                <td className="p-3">
+                  {alert.reason || 'No reason provided'}
+                </td>
+                <td className="p-3">
+                  {alert.generated_at
+                    ? new Date(alert.generated_at).toLocaleString()
+                    : '—'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="text-xs text-[#8A9A92] mt-3">
+        Records returned: {liveAlerts.length}
+      </p>
+    </>
+  )}
+</div>
       {/* Action Bar (Hidden during print) */}
       <div className="glass-card p-4 border border-white/10 flex flex-wrap items-center justify-between gap-4 print:hidden">
         <div>
