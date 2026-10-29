@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForest } from '../../../lib/ForestContext';
 import { StatusBadge } from '../../StatusBadge';
 import { 
