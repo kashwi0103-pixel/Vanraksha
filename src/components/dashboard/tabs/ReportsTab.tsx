@@ -25,6 +25,56 @@ interface LiveAlert {
 export const ReportsTab: React.FC = () => {
   const { currentDay, status, evaluation, dataset, dayIndex, dataSourceInfo } = useForest();
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [liveAlerts, setLiveAlerts] = useState<LiveAlert[]>([]);
+const [alertsLoading, setAlertsLoading] = useState(true);
+const [alertsError, setAlertsError] = useState<string | null>(null);
+
+useEffect(() => {
+  const controller = new AbortController();
+
+  async function fetchLiveAlerts() {
+    try {
+      setAlertsLoading(true);
+      setAlertsError(null);
+
+      const response = await fetch(
+        `${API_BASE}/alerts?limit=115&offset=0`,
+        { signal: controller.signal }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Alerts API returned ${response.status}`);
+      }
+
+      const data: unknown = await response.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error('Unexpected alerts API response format');
+      }
+
+      setLiveAlerts(data as LiveAlert[]);
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
+
+      setAlertsError(
+        error instanceof Error ? error.message : 'Unable to load live alerts'
+      );
+    } finally {
+      if (!controller.signal.aborted) {
+        setAlertsLoading(false);
+      }
+    }
+  }
+
+  if (!API_BASE) {
+    setAlertsError('API URL is not configured');
+    setAlertsLoading(false);
+  } else {
+    void fetchLiveAlerts();
+  }
+
+  return () => controller.abort();
+}, []);
 
   const reportId = `FG-REP-2026-10-${String(dayIndex).padStart(3, '0')}`;
   const generatedAt = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
