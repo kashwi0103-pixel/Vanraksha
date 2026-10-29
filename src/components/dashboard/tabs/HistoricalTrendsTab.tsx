@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -21,6 +22,75 @@ import {
 
 export const HistoricalTrendsTab: React.FC = () => {
   const { dataset } = useForest();
+  const API_BASE = (
+  import.meta.env.VITE_API_BASE_URL || ''
+).replace(/\/$/, '');
+
+interface MonthlyObservation {
+  id: number;
+  region_id: number;
+  observation_month: string;
+  ndvi: number | null;
+  ndmi: number | null;
+  rainfall_mm: number | null;
+  temperature_c: number | null;
+}
+
+const [monthlyData, setMonthlyData] = useState<MonthlyObservation[]>([]);
+const [monthlyLoading, setMonthlyLoading] = useState(true);
+const [monthlyError, setMonthlyError] = useState('');
+
+useEffect(() => {
+  let cancelled = false;
+
+  async function loadMonthlyData() {
+    try {
+      if (!API_BASE) {
+        throw new Error('API URL is not configured.');
+      }
+
+      const response = await fetch(
+        `${API_BASE}/observations?region_id=1&limit=115&offset=0`
+      );
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const records: MonthlyObservation[] = await response.json();
+
+      if (!Array.isArray(records)) {
+        throw new Error('Unexpected API response format.');
+      }
+
+      if (!cancelled) {
+        setMonthlyData(
+          records
+            .filter(record => record.observation_month)
+            .sort((a, b) =>
+              a.observation_month.localeCompare(b.observation_month)
+            )
+        );
+      }
+    } catch (error) {
+      if (!cancelled) {
+        setMonthlyError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to load monthly observations.'
+        );
+      }
+    } finally {
+      if (!cancelled) setMonthlyLoading(false);
+    }
+  }
+
+  loadMonthlyData();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
   const [rangeDays, setRangeDays] = useState<30 | 60 | 90>(90);
   const [showRain, setShowRain] = useState<boolean>(true);
   const [showTemp, setShowTemp] = useState<boolean>(false);
@@ -93,6 +163,240 @@ export const HistoricalTrendsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      
+{/* Actual backend monthly observations */}
+<div className="glass-card p-6 border border-white/10 space-y-4">
+  <div>
+    <span className="text-xs font-mono uppercase tracking-wider text-[#2ECC71]">
+      Verified Backend Data
+    </span>
+    <h3 className="text-xl font-heading font-bold text-white mt-1">
+      Historical Monthly Vegetation Trends
+    </h3>
+    <p className="text-xs text-[#8A9A92] mt-1">
+      Uttarakhand · Actual monthly records · No daily interpolation
+    </p>
+  </div>
+
+  {monthlyLoading ? (
+    <p className="text-sm text-[#8A9A92]">
+      Loading monthly observations…
+    </p>
+  ) : monthlyError ? (
+    <p className="text-sm text-[#E5533D]">
+      Monthly data unavailable: {monthlyError}
+    </p>
+  ) : monthlyData.length === 0 ? (
+    <p className="text-sm text-[#F5B841]">
+      No monthly observations available.
+    </p>
+  ) : (
+    <>
+      {(() => {
+        const chartData = monthlyData.filter(
+          d => d.ndvi != null || d.ndmi != null
+        );
+
+        const width = 840;
+        const height = 240;
+        const left = 48;
+        const right = 20;
+        const top = 20;
+        const bottom = 36;
+        const plotWidth = width - left - right;
+        const plotHeight = height - top - bottom;
+
+        const x = (i: number) =>
+          left + (i / Math.max(1, chartData.length - 1)) * plotWidth;
+
+        const y = (v: number) =>
+          top + plotHeight - Math.max(0, Math.min(1, v)) * plotHeight;
+
+        const makePath = (key: 'ndvi' | 'ndmi') => {
+          const segments: string[] = [];
+          let current: string[] = [];
+
+          chartData.forEach((record, i) => {
+            const value = record[key];
+
+            if (value == null || !Number.isFinite(value)) {
+              if (current.length > 1) {
+                segments.push(`M ${current.join(' L ')}`);
+              }
+              current = [];
+              return;
+            }
+
+            current.push(`${x(i)},${y(value)}`);
+          });
+
+          if (current.length > 1) {
+            segments.push(`M ${current.join(' L ')}`);
+          }
+
+          return segments;
+        };
+
+        const ndviPath = makePath('ndvi');
+        const ndmiPath = makePath('ndmi');
+
+        return (
+          <>
+            <div className="flex flex-wrap gap-4 text-xs font-mono">
+              <span className="text-[#2ECC71]">━ NDVI</span>
+              <span className="text-[#38BDF8]">━ NDMI</span>
+            </div>
+
+            <div className="w-full overflow-hidden rounded-xl border border-white/10 bg-[#05110A]">
+              <svg
+                viewBox={`0 0 ${width} ${height}`}
+                className="w-full"
+                role="img"
+                aria-label="Monthly NDVI and NDMI trends from backend observations"
+              >
+                {[0, 0.25, 0.5, 0.75, 1].map(value => (
+                  <g key={value}>
+                    <line
+                      x1={left}
+                      y1={y(value)}
+                      x2={width - right}
+                      y2={y(value)}
+                      stroke="rgba(255,255,255,0.10)"
+                      strokeDasharray="4 4"
+                    />
+                    <text
+                      x={left - 8}
+                      y={y(value) + 4}
+                      fill="#8A9A92"
+                      fontSize="10"
+                      textAnchor="end"
+                    >
+                      {value.toFixed(2)}
+                    </text>
+                  </g>
+                ))}
+
+                {ndmiPath.map((path, i) => (
+                  <path
+                    key={`ndmi-${i}`}
+                    d={path}
+                    fill="none"
+                    stroke="#38BDF8"
+                    strokeWidth="2.5"
+                    strokeLinejoin="round"
+                  />
+                ))}
+
+                {ndviPath.map((path, i) => (
+                  <path
+                    key={`ndvi-${i}`}
+                    d={path}
+                    fill="none"
+                    stroke="#2ECC71"
+                    strokeWidth="2.5"
+                    strokeLinejoin="round"
+                  />
+                ))}
+
+                {chartData.map((record, i) => (
+                  <g key={record.id}>
+                    {record.ndvi != null && (
+                      <circle
+                        cx={x(i)}
+                        cy={y(record.ndvi)}
+                        r="3"
+                        fill="#2ECC71"
+                      >
+                        <title>
+                          {record.observation_month}: NDVI {record.ndvi}
+                        </title>
+                      </circle>
+                    )}
+                    {record.ndmi != null && (
+                      <circle
+                        cx={x(i)}
+                        cy={y(record.ndmi)}
+                        r="3"
+                        fill="#38BDF8"
+                      >
+                        <title>
+                          {record.observation_month}: NDMI {record.ndmi}
+                        </title>
+                      </circle>
+                    )}
+                  </g>
+                ))}
+
+                {[0, Math.floor((chartData.length - 1) / 2),
+                  chartData.length - 1]
+                  .filter((value, i, arr) => arr.indexOf(value) === i)
+                  .map(i => (
+                    <text
+                      key={i}
+                      x={x(i)}
+                      y={height - 10}
+                      fill="#8A9A92"
+                      fontSize="10"
+                      textAnchor="middle"
+                    >
+                      {chartData[i].observation_month.slice(0, 7)}
+                    </text>
+                  ))}
+              </svg>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr className="border-b border-white/10 text-[#8A9A92]">
+                    <th className="py-2 px-3">Month</th>
+                    <th className="py-2 px-3">NDVI</th>
+                    <th className="py-2 px-3">NDMI</th>
+                    <th className="py-2 px-3">Rainfall</th>
+                    <th className="py-2 px-3">Temperature</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {monthlyData.slice(-12).reverse().map(record => (
+                    <tr key={record.id}>
+                      <td className="py-2 px-3 text-white">
+                        {record.observation_month.slice(0, 7)}
+                      </td>
+                      <td className="py-2 px-3 text-[#2ECC71]">
+                        {record.ndvi == null ? '—' : record.ndvi.toFixed(3)}
+                      </td>
+                      <td className="py-2 px-3 text-[#38BDF8]">
+                        {record.ndmi == null ? '—' : record.ndmi.toFixed(3)}
+                      </td>
+                      <td className="py-2 px-3 text-white">
+                        {record.rainfall_mm == null
+                          ? '—'
+                          : `${record.rainfall_mm.toFixed(1)} mm`}
+                      </td>
+                      <td className="py-2 px-3 text-white">
+                        {record.temperature_c == null
+                          ? '—'
+                          : `${record.temperature_c.toFixed(1)}°C`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="text-[11px] text-[#8A9A92]">
+              Monthly backend records are shown separately from simulated
+              daily telemetry. Missing values are left blank and are not
+              interpolated. These screening indicators do not confirm
+              forest damage or fire.
+            </p>
+          </>
+        );
+      })()}
+    </>
+  )}
+</div>
+
       {/* Top Banner & Range Controls */}
       <div className="glass-card p-4 border border-white/10 flex flex-wrap items-center justify-between gap-4">
         <div>
