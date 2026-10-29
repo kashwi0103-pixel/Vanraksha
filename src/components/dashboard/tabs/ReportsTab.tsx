@@ -13,7 +13,15 @@ import {
   CheckCircle2, 
   Database 
 } from 'lucide-react';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+interface LiveAlert {
+  id: number;
+  observation_id: number;
+  alert_level: string;
+  reason: string | null;
+  generated_at: string;
+}
 export const ReportsTab: React.FC = () => {
   const { currentDay, status, evaluation, dataset, dayIndex, dataSourceInfo } = useForest();
   const [isExporting, setIsExporting] = useState<boolean>(false);
