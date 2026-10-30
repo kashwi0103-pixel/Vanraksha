@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 import { useForest } from '../../../lib/ForestContext';
 import { 
   LineChart, 
@@ -17,11 +16,16 @@ import {
   Thermometer, 
   Table as TableIcon,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Split,
+  TrendingUp,
+  Sliders
 } from 'lucide-react';
+import { HistoricalSatelliteComparison } from '../HistoricalSatelliteComparison';
 
 export const HistoricalTrendsTab: React.FC = () => {
   const { dataset } = useForest();
+  const [subView, setSubView] = useState<'comparison' | 'timeseries' | 'all'>('comparison');
   const API_BASE = (
   import.meta.env.VITE_API_BASE_URL || ''
 ).replace(/\/$/, '');
@@ -158,10 +162,66 @@ useEffect(() => {
   if (curNdmiSeg.length > 1) ndmiSegments.push(`M ${curNdmiSeg.join(' L ')}`);
 
   return (
-    <div className="space-y-6">
-      
-{/* Actual backend monthly observations */}
-<div className="glass-card p-6 border border-white/10 space-y-4">
+    <div className="space-y-8">
+      {/* Historical Section Mode Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-2 rounded-2xl bg-white/[0.02] border border-white/10">
+        <div className="flex items-center gap-2 px-3 py-1">
+          <span className="text-xs font-mono uppercase tracking-wider text-[#2ECC71] font-bold">
+            Historical Mode:
+          </span>
+        </div>
+
+        <div className="inline-flex p-1 rounded-xl bg-black/40 border border-white/10" role="tablist">
+          <button
+            type="button"
+            onClick={() => setSubView('comparison')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              subView === 'comparison'
+                ? 'bg-[#2ECC71] text-black shadow-md shadow-[#2ECC71]/20'
+                : 'text-[#8A9A92] hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Split size={14} className={subView === 'comparison' ? 'text-black' : 'text-[#2ECC71]'} />
+            <span>Satellite Comparison (2023 vs 2025)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSubView('timeseries')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              subView === 'timeseries'
+                ? 'bg-[#2ECC71] text-black shadow-md shadow-[#2ECC71]/20'
+                : 'text-[#8A9A92] hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <LineChart size={14} className={subView === 'timeseries' ? 'text-black' : 'text-[#2ECC71]'} />
+            <span>Time-Series Graphs & Logs</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSubView('all')}
+            className={`hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+              subView === 'all'
+                ? 'bg-white/20 text-white'
+                : 'text-[#8A9A92] hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <span>Show All</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 1. Historical Satellite Comparison (Interactive Slider & Change Candidates) */}
+      {(subView === 'comparison' || subView === 'all') && (
+        <HistoricalSatelliteComparison />
+      )}
+
+      {/* 2. Time-Series Telemetry & Acquisition Log */}
+      {(subView === 'timeseries' || subView === 'all') && (
+        <div className="space-y-6">
+          {/* Actual backend monthly observations */}
+          <div className="glass-card p-6 border border-white/10 space-y-4">
   <div>
     <span className="text-xs font-mono uppercase tracking-wider text-[#2ECC71]">
       Verified Backend Data
@@ -751,6 +811,8 @@ useEffect(() => {
           </table>
         </div>
       </div>
+      </div>
+      )}
     </div>
   );
 };

@@ -78,7 +78,7 @@ export const DashboardSection: React.FC = () => {
       id: 'historical-trends',
       label: 'Historical trends',
       icon: LineChart,
-      description: 'Available dates ke NDVI/NDMI graphs',
+      description: 'Historical comparison (2023 vs 2025) aur NDVI/NDMI graphs',
     },
     {
       id: 'potential-hotspots',

@@ -390,3 +390,5 @@ export const POTENTIAL_CHANGE_CANDIDATES: PotentialChangeCandidate[] = [
     };
   })(),
 ];
+
+export const CHANGE_CANDIDATES = POTENTIAL_CHANGE_CANDIDATES;

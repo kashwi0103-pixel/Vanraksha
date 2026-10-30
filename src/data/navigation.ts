@@ -41,7 +41,8 @@ export const DASHBOARD_NAV_SECTIONS: DashboardNavItem[] = [
   {
     id: 'historical-trends',
     label: 'Historical trends',
-    hindiDescription: 'Available dates ke NDVI/NDMI graphs',
+    hindiDescription: 'Historical satellite comparison (2023 vs 2025) aur NDVI/NDMI graphs',
+    badge: '2023 vs 2025',
   },
   {
     id: 'potential-hotspots',
