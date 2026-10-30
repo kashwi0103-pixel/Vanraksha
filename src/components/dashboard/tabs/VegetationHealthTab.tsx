@@ -24,7 +24,7 @@ interface RasterCell {
 }
 
 export const VegetationHealthTab: React.FC = () => {
-  const { currentDay } = useForest();
+  const { currentDay, setActiveDashboardTab } = useForest();
   const [hoveredCell, setHoveredCell] = useState<RasterCell | null>(null);
 
   // Generate an 8x6 raster grid of NDVI pixels representing the study catchment
@@ -103,10 +103,17 @@ export const VegetationHealthTab: React.FC = () => {
           </h3>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-mono">
-          <span className="text-[#8A9A92]">Formula: (NIR - Red) / (NIR + Red)</span>
-          <span className="text-white/20">•</span>
-          <span className="text-[#B6F36A]">10m Pixel Grid (48 Sampling Sectors)</span>
+        <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+          <span className="text-[#8A9A92] hidden sm:inline">Formula: (NIR - Red) / (NIR + Red)</span>
+          <span className="text-white/20 hidden sm:inline">•</span>
+          <button
+            type="button"
+            onClick={() => setActiveDashboardTab('nainital-change')}
+            className="px-3 py-1.5 rounded-lg bg-[#2ECC71]/15 hover:bg-[#2ECC71]/25 text-[#B6F36A] border border-[#2ECC71]/30 transition-all font-semibold flex items-center gap-1.5"
+          >
+            <Layers size={13} />
+            <span>Nainital 2023 vs 2025 Analysis</span>
+          </button>
         </div>
       </div>
 

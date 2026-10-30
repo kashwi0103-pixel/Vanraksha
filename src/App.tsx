@@ -39,6 +39,7 @@ function AppContent() {
     const isDashboardTab = [
       'overview',
       'satellite-map',
+      'nainital-change',
       'vegetation-health',
       'moisture-monitoring',
       'historical-trends',
