@@ -23,7 +23,7 @@ export const HomeSection: React.FC<HomeSectionProps> = ({ onNavigate, systemStat
         <div className="flex items-center gap-2.5">
           <SimulatedDataBadge variant="pill" />
           <span className="text-[11px] font-mono text-[#8A9A92] uppercase tracking-wider hidden sm:inline">
-            Pilot Area: Blackwood Creek · Day {dayIndex} ({currentDay?.dateString})
+            Pilot Area: Corbett Tiger Reserve, Uttarakhand · Day {dayIndex} ({currentDay?.dateString})
           </span>
         </div>
 
@@ -45,7 +45,7 @@ export const HomeSection: React.FC<HomeSectionProps> = ({ onNavigate, systemStat
         </h1>
 
         <p className="text-base sm:text-xl text-[#8A9A92] max-w-3xl mx-auto leading-relaxed font-sans mb-8">
-          Satellite + weather + one ground sensor &rarr; transparent early stress signals for field teams.
+          Satellite + weather + in-situ ground sensors &rarr; transparent early stress signals for Uttarakhand forest divisions.
         </p>
 
         {/* Primary Call-to-Action Buttons */}
@@ -90,12 +90,12 @@ export const HomeSection: React.FC<HomeSectionProps> = ({ onNavigate, systemStat
         <CountUpStrip />
       </div>
 
-      {/* Strict Student Prototype Boundary Footnote */}
+      {/* System Protocol Footnote */}
       <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-[#8A9A92]">
         <div className="flex items-center gap-2">
           <ShieldAlert size={15} className="text-[#F5B841] shrink-0" aria-hidden="true" />
           <span>
-            <strong className="text-white font-medium">Demonstrator Boundary:</strong> ForestGuard AI is an academic student demonstrator for early-warning decision support. Never treated as a safety-critical fire predictor.
+            <strong className="text-white font-medium">Vanraksha (वनरक्षा) Protocol:</strong> Multi-sensor decision-support platform for forest stewards. Automated telemetry serves as an early-warning signal requiring manual ground verification.
           </span>
         </div>
         <span className="font-mono text-[#B6F36A] text-[11px] shrink-0">

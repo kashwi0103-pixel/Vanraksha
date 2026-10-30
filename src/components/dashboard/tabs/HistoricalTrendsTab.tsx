@@ -45,10 +45,6 @@ useEffect(() => {
 
   async function loadMonthlyData() {
     try {
-      if (!API_BASE) {
-        throw new Error('API URL is not configured.');
-      }
-
       const response = await fetch(
         `${API_BASE}/observations?region_id=1&limit=115&offset=0`
       );

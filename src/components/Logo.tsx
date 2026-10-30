@@ -84,11 +84,16 @@ export const Logo: React.FC<LogoProps> = ({
 
       {showText && (
         <div className="flex flex-col">
-          <span className="font-heading font-bold text-lg tracking-tight text-white flex items-center gap-1.5 leading-none">
-            ForestGuard <span className="text-[#B6F36A]">AI</span>
-          </span>
+          <div className="flex items-center gap-1.5 leading-none">
+            <span className="font-heading font-bold text-xl tracking-tight text-white">
+              Vanraksha
+            </span>
+            <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-[#2ECC71]/15 text-[#B6F36A] border border-[#2ECC71]/30">
+              वनरक्षा
+            </span>
+          </div>
           <span className="text-[10px] uppercase font-mono tracking-wider text-[#8A9A92] mt-0.5 leading-none">
-            Student Demonstrator
+            Forest Intelligence System
           </span>
         </div>
       )}

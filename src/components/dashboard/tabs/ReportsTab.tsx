@@ -13,7 +13,7 @@ import {
   CheckCircle2, 
   Database 
 } from 'lucide-react';
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
 interface LiveAlert {
   id: number;
@@ -66,12 +66,7 @@ useEffect(() => {
     }
   }
 
-  if (!API_BASE) {
-    setAlertsError('API URL is not configured');
-    setAlertsLoading(false);
-  } else {
-    void fetchLiveAlerts();
-  }
+  void fetchLiveAlerts();
 
   return () => controller.abort();
 }, []);
@@ -142,8 +137,8 @@ useEffect(() => {
         meta: {
           report_id: reportId,
           generated_at: generatedAt,
-          region: 'Bandipur Tiger Reserve (Core Zone B)',
-          coordinates: '11°39\'50" N, 76°37\'55" E',
+          region: 'Jim Corbett National Park (Dhikala Core Zone, Uttarakhand)',
+          coordinates: '29°32\'55" N, 78°56\'48" E',
           data_mode: dataSourceInfo.mode,
           data_source: dataSourceInfo.sourceName,
         },
@@ -321,7 +316,7 @@ useEffect(() => {
             <div>
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-xs font-mono uppercase tracking-wider text-[#2ECC71] print:text-emerald-700 font-bold">
-                  Government of India // Integrated Forest Monitoring Wing
+                  Vanraksha (वनरक्षा) // Forest Department, Uttarakhand
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white print:text-black">
@@ -345,13 +340,13 @@ useEffect(() => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/10 print:border-gray-200 print:bg-gray-50 mb-6 text-xs font-mono">
           <div>
             <span className="text-[#8A9A92] print:text-gray-500 block text-[10px] uppercase">Study Division</span>
-            <span className="font-bold text-white print:text-black">Bandipur Tiger Reserve</span>
-            <span className="text-[#8A9A92] print:text-gray-600 block">Core Zone B (650 ha)</span>
+            <span className="font-bold text-white print:text-black">Jim Corbett National Park</span>
+            <span className="text-[#8A9A92] print:text-gray-600 block">Dhikala Core Zone (820 ha), Uttarakhand</span>
           </div>
           <div>
             <span className="text-[#8A9A92] print:text-gray-500 block text-[10px] uppercase">Coordinates</span>
-            <span className="font-bold text-white print:text-black">11°39&apos;50&quot; N, 76°37&apos;55&quot; E</span>
-            <span className="text-[#8A9A92] print:text-gray-600 block">UTM Zone 43N (WGS84)</span>
+            <span className="font-bold text-white print:text-black">29°32&apos;55&quot; N, 78°56&apos;48&quot; E</span>
+            <span className="text-[#8A9A92] print:text-gray-600 block">UTM Zone 44N (WGS84)</span>
           </div>
           <div>
             <span className="text-[#8A9A92] print:text-gray-500 block text-[10px] uppercase">Telemetry Mode</span>
@@ -457,19 +452,19 @@ useEffect(() => {
           <div>
             <span className="text-[#8A9A92] print:text-gray-500 block text-[10px] uppercase">Field Verification Officer:</span>
             <div className="h-10 border-b border-dashed border-white/20 print:border-gray-400 mt-2"></div>
-            <span className="text-[#8A9A92] print:text-gray-600 block mt-1">Range Forest Officer (RFO), Bandipur</span>
+            <span className="text-[#8A9A92] print:text-gray-600 block mt-1">Range Forest Officer (RFO), Corbett Tiger Reserve, Uttarakhand</span>
           </div>
 
           <div>
             <span className="text-[#8A9A92] print:text-gray-500 block text-[10px] uppercase">Remote Sensing Analyst:</span>
             <div className="h-10 border-b border-dashed border-white/20 print:border-gray-400 mt-2"></div>
-            <span className="text-[#8A9A92] print:text-gray-600 block mt-1">ForestGuard AI Monitoring Wing</span>
+            <span className="text-[#8A9A92] print:text-gray-600 block mt-1">Vanraksha (वनरक्षा) Remote Sensing Wing</span>
           </div>
         </div>
 
         {/* Footer Disclaimer */}
         <div className="mt-8 pt-4 border-t border-white/10 print:border-gray-200 text-[10px] font-mono text-[#8A9A92] print:text-gray-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <span>Demonstrator platform. Ground physical verification is strictly required prior to any forestry management action.</span>
+          <span>Vanraksha Forest Intelligence Platform. Ground physical verification recommended prior to forestry intervention.</span>
           <span>Doc ID: {reportId}</span>
         </div>
       </div>

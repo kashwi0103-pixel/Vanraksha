@@ -3,10 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import path from 'path';
+import {
+  MOCK_REGIONS,
+  MOCK_OBSERVATIONS,
+  MOCK_ALERTS,
+  getAlertSummary,
+  AlertLevel,
+} from './src/data/mockApiData';
 
 const app = express();
 const port = 3000;
@@ -23,7 +30,76 @@ const ai = new GoogleGenAI({
   },
 });
 
-app.post('/api/explain-alert', async (req, res) => {
+// -------------------------------------------------------------
+// REST API ROUTES (Migrated from FastAPI backend to Express)
+// -------------------------------------------------------------
+
+const handleHealth = (_req: Request, res: Response) => {
+  res.json({ status: 'ok', service: 'ForestGuard AI API' });
+};
+
+const handleRegions = (_req: Request, res: Response) => {
+  res.json(MOCK_REGIONS);
+};
+
+const handleObservations = (req: Request, res: Response) => {
+  const regionId = parseInt(req.query.region_id as string) || 1;
+  const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 115, 1), 500);
+  const offset = Math.max(parseInt(req.query.offset as string) || 0, 0);
+
+  const filtered = MOCK_OBSERVATIONS.filter((o) => o.region_id === regionId);
+  const paginated = filtered.slice(offset, offset + limit);
+  res.json(paginated);
+};
+
+const handleAlerts = (req: Request, res: Response) => {
+  const alertLevel = req.query.alert_level as AlertLevel | undefined;
+  const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 115, 1), 500);
+  const offset = Math.max(parseInt(req.query.offset as string) || 0, 0);
+
+  const allowed = new Set([
+    'Green',
+    'Yellow',
+    'Orange',
+    'Red',
+    'Insufficient satellite data',
+  ]);
+
+  if (alertLevel && !allowed.has(alertLevel)) {
+    return res.status(400).json({ error: 'Invalid alert_level' });
+  }
+
+  let filtered = MOCK_ALERTS;
+  if (alertLevel) {
+    filtered = filtered.filter((a) => a.alert_level === alertLevel);
+  }
+
+  const paginated = filtered.slice(offset, offset + limit);
+  res.json(paginated);
+};
+
+const handleSummary = (_req: Request, res: Response) => {
+  res.json(getAlertSummary());
+};
+
+// Register routes both at root and /api for compatibility
+app.get('/health', handleHealth);
+app.get('/api/health', handleHealth);
+
+app.get('/regions', handleRegions);
+app.get('/api/regions', handleRegions);
+
+app.get('/observations', handleObservations);
+app.get('/api/observations', handleObservations);
+
+app.get('/alerts', handleAlerts);
+app.get('/api/alerts', handleAlerts);
+
+app.get('/summary', handleSummary);
+app.get('/api/summary', handleSummary);
+
+// Gemini AI Explanation Endpoint
+app.post('/api/explain-alert', async (req: Request, res: Response) => {
   try {
     const { indicators, triggeredFlags = [], status = 'WATCH' } = req.body || {};
 
@@ -81,6 +157,9 @@ app.post('/api/explain-alert', async (req, res) => {
   }
 });
 
+// -------------------------------------------------------------
+// Vite middleware & Static server setup
+// -------------------------------------------------------------
 async function startServer() {
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.resolve(process.cwd(), 'dist')));

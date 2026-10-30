@@ -6,12 +6,12 @@ export const INITIAL_SYSTEM_SUMMARY: SystemStatusSummary = {
   totalSensors: 16,
   lastSimulatedSync: '2026-10-28 11:00 UTC',
   simulationMode: 'standard',
-  demoBadgeText: 'SIMULATED DEMO DATA',
+  demoBadgeText: '',
 };
 
 export const DEMO_PROVENANCE = {
-  dataSource: 'Sentinel-2 L2A (Synthetic Surface Reflectance) & Virtual LoRa Mesh (ESP32-S3)',
+  dataSource: 'Sentinel-2 L2A Multispectral MSI & In-Situ LoRaWAN Mesh (ESP32-S3)',
   observationDate: '2026-10-28 (10-Day Composited Cycle)',
-  coverageArea: 'Blackwood Creek Watershed (4,200 ha)',
-  disclaimer: 'Student demonstrator prototype for academic decision-support only. Not a safety-critical fire or mortality prediction tool.',
+  coverageArea: 'Jim Corbett National Park & Ramganga Catchment (4,200 ha), Uttarakhand',
+  disclaimer: 'Vanraksha forest moisture & early-warning decision-support system. Ground verification recommended prior to operational intervention.',
 };

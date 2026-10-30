@@ -52,20 +52,20 @@ export const PotentialHotspotsTab: React.FC = () => {
   const baselineNdvi = currentDay?.seasonalBaseline.ndvi ?? 0.75;
   const ndviAnomaly = currentNdvi - baselineNdvi;
 
-  // Synthesize realistic hotspots based on active status and day observations
+  // Synthesize realistic hotspots based on active status and day observations in Uttarakhand
   const hotspots: HotspotItem[] = [
     {
       id: 'hs-1',
-      sector: 'Sector B-4',
-      name: 'Southern Conifer Crest & Shallow Loam',
-      coords: '11°39\'42" N, 76°37\'48" E',
-      elevation: '1,120m MSL',
+      sector: 'Sector Dhikala-4',
+      name: 'Chir Pine Crest & Shallow Loam, Corbett Reserve',
+      coords: '29°32\'42" N, 78°56\'38" E',
+      elevation: '920m MSL',
       severity: status === 'FIELD CHECK RECOMMENDED' ? 'Critical' : status === 'WATCH' ? 'Moderate' : 'Watch',
       status: status,
       primaryIndicator: 'Rapid NDMI drop (-0.14) without rain over 12 consecutive days',
       indicators: [
         { label: 'NDMI Canopy Moisture', value: `${(currentDay?.ndmi ?? 0.38).toFixed(2)} (Deficit: -0.14)`, isTriggered: true },
-        { label: 'Root-Zone Capacitance', value: `${currentDay?.calibratedSoilPct ?? 24}% (Bone Dry)`, isTriggered: true },
+        { label: 'Root-Zone Capacitance', value: `${currentDay?.calibratedSoilPct ?? 24}% (Dry Pine Loam)`, isTriggered: true },
         { label: 'Vapour Pressure Deficit', value: `${vpdKpa.toFixed(2)} kPa (>2.2 threshold)`, isTriggered: true },
         { label: 'Satellite Cloud Mask', value: 'Clear (0% interference)', isTriggered: false },
       ],
@@ -79,10 +79,10 @@ export const PotentialHotspotsTab: React.FC = () => {
     },
     {
       id: 'hs-2',
-      sector: 'Sector C-2',
-      name: 'Upper Rim Escarpment (High Solar Exposure)',
-      coords: '11°40\'05" N, 76°38\'12" E',
-      elevation: '1,280m MSL',
+      sector: 'Sector Bijrani-2',
+      name: 'Upper Kanda Ridge Escarpment, Uttarakhand',
+      coords: '29°33\'15" N, 78°57\'12" E',
+      elevation: '1,180m MSL',
       severity: 'Moderate',
       status: 'WATCH',
       primaryIndicator: 'Persistent thermal elevation (>34.2°C) with elevated VPD',
@@ -100,10 +100,10 @@ export const PotentialHotspotsTab: React.FC = () => {
     },
     {
       id: 'hs-3',
-      sector: 'Sector A-3',
-      name: 'Node #1 LoRa Perimeter (Alluvial Edge)',
-      coords: '11°39\'30" N, 76°37\'20" E',
-      elevation: '980m MSL',
+      sector: 'Sector Sona-3',
+      name: 'Ramganga Riverine LoRa Cluster, Corbett',
+      coords: '29°31\'50" N, 78°55\'40" E',
+      elevation: '780m MSL',
       severity: 'Watch',
       status: 'NORMAL MONITORING',
       primaryIndicator: 'Sensor vs Satellite divergence: dry shallow soil while canopy remains hydrated',
@@ -121,10 +121,10 @@ export const PotentialHotspotsTab: React.FC = () => {
     },
     {
       id: 'hs-4',
-      sector: 'Sector D-1',
-      name: 'North-West Gully (Cloud Shadow Fringe)',
-      coords: '11°40\'22" N, 76°36\'55" E',
-      elevation: '920m MSL',
+      sector: 'Sector Dhangarhi-1',
+      name: 'Corbett Sal & Mixed Deciduous Foothills',
+      coords: '29°34\'10" N, 78°58\'20" E',
+      elevation: '850m MSL',
       severity: 'False Alarm',
       status: 'DATA INCOMPLETE',
       primaryIndicator: 'Cloud shadow edge artifact triggered sudden drop in reflectance',

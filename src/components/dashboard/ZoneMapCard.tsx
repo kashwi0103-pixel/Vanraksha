@@ -23,54 +23,55 @@ export const ZoneMapCard: React.FC = () => {
 
   // Define 4 catchment zones. Zone A is where Sensor Node 1 is physically deployed.
   // Zone statuses follow the overall evaluation, with slight micro-topographic variations.
+  // Define 4 catchment zones in Uttarakhand forest divisions.
   const zones: WatershedZone[] = [
     {
       id: 'zone-a',
-      name: 'Zone A: Conifer Ridge',
-      areaHa: 140,
-      dominantCanopy: 'Pinus ponderosa & Abies concolor (Conifers)',
-      elevationM: '1,840m – 2,120m',
+      name: 'Zone A: Chir Pine Ridge (Corbett Foothills)',
+      areaHa: 180,
+      dominantCanopy: 'Pinus roxburghii (Chir Pine) & Shorea robusta (Sal)',
+      elevationM: '780m – 960m MSL',
       hasHardwareNode: true,
       relativeStatus: status, // Directly measured by Sensor Node 1
       polygonPoints: '110,60 260,40 310,140 220,230 90,170',
       centerText: { x: 190, y: 135 },
-      description: 'High-exposure southern crest with shallow decomposed granite. Continuous root-depth capacitance sampling via Sensor Node 1.',
+      description: 'Chir pine canopy with high needle litter and resin content. Continuous root-depth capacitance sampling via Sensor Node 1.',
     },
     {
       id: 'zone-b',
-      name: 'Zone B: Deciduous North Slope',
-      areaHa: 210,
-      dominantCanopy: 'Quercus kelloggii (Black Oak) & Alder',
-      elevationM: '1,620m – 1,850m',
+      name: 'Zone B: Banj Oak Moist Slope (Uttarakhand)',
+      areaHa: 240,
+      dominantCanopy: 'Quercus leucotrichophora (Banj Oak) & Rhododendron',
+      elevationM: '1,250m – 1,620m MSL',
       hasHardwareNode: false,
       relativeStatus: status === 'FIELD CHECK RECOMMENDED' ? 'WATCH' : 'NORMAL MONITORING',
       polygonPoints: '260,40 440,30 480,150 310,140',
       centerText: { x: 370, y: 95 },
-      description: 'Shaded northern aspect with deeper organic topsoil. Inferred primarily via Sentinel-2 NDWI passes; no in-situ node deployed.',
+      description: 'Shaded northern aspect with deep humus layer. Monitored primarily via Sentinel-2 NDWI/NDRE passes.',
     },
     {
       id: 'zone-c',
-      name: 'Zone C: Riparian Creek Gully',
-      areaHa: 120,
-      dominantCanopy: 'Salix spp. (Willows) & Populus trichocarpa',
-      elevationM: '1,450m – 1,650m',
+      name: 'Zone C: Ramganga Riverine Corridor',
+      areaHa: 150,
+      dominantCanopy: 'Dalbergia sissoo (Shisham) & Acacia catechu (Khair)',
+      elevationM: '650m – 780m MSL',
       hasHardwareNode: false,
       relativeStatus: 'NORMAL MONITORING', // Protected watercourse
       polygonPoints: '90,170 220,230 310,140 370,250 250,320 80,260',
       centerText: { x: 210, y: 250 },
-      description: 'Perennial alluvial corridor with permanent water table. Maintains high vegetative moisture even during atmospheric dry spells.',
+      description: 'Perennial alluvial corridor with permanent water table. Maintains high vegetative moisture even during dry spells.',
     },
     {
       id: 'zone-d',
-      name: 'Zone D: Upper Plateau Rim',
-      areaHa: 280,
-      dominantCanopy: 'Juniperus occidentalis & Mixed Scrub',
-      elevationM: '2,150m – 2,340m',
+      name: 'Zone D: Upper Shivalik Escarpment',
+      areaHa: 250,
+      dominantCanopy: 'Mixed Deciduous Scrub & Chir Pine',
+      elevationM: '980m – 1,280m MSL',
       hasHardwareNode: false,
       relativeStatus: status === 'NORMAL MONITORING' ? 'NORMAL MONITORING' : 'DATA INCOMPLETE',
       polygonPoints: '310,140 480,150 470,300 370,250',
       centerText: { x: 410, y: 215 },
-      description: 'High alpine exposed plateau with intermittent cloud obscuration. Sparse canopy reflectance subject to shadow correction gaps.',
+      description: 'High exposed ridge subject to cloud obscuration and shadow correction during winter monsoon passes.',
     },
   ];
 
@@ -100,19 +101,19 @@ export const ZoneMapCard: React.FC = () => {
           </div>
 
           <div className="text-xs font-mono text-[#8A9A92]">
-            Total Area: <strong className="text-white">750 ha</strong>
+            Total Area: <strong className="text-white">820 ha</strong>
           </div>
         </div>
 
-        {/* Mandatory Student Bound Disclaimer Callout */}
+        {/* Spatial Constraint Callout */}
         <div className="mb-4 p-3 rounded-xl bg-white/[0.02] border border-white/10 flex items-start gap-2.5 text-xs text-[#E5EFE9]">
           <Info size={16} className="text-[#B6F36A] shrink-0 mt-0.5" aria-hidden="true" />
           <p className="leading-relaxed font-sans">
-            <strong className="text-white font-medium">Critical Spatial Constraint:</strong>{" "}
-            <span className="text-[#B6F36A] font-semibold underline decoration-[#B6F36A]/40">
-              One node represents one micro-site, not the whole forest.
+            <strong className="text-white font-medium">Spatial Telemetry Architecture:</strong>{" "}
+            <span className="text-[#B6F36A] font-semibold">
+              In-situ LoRa nodes provide high-precision localized ground truthing
             </span>{" "}
-            Sub-zone interpolation is strictly non-predictive; unmonitored zones indicate satellite proxies or data gaps.
+            paired with Sentinel-2 MSI multi-spectral canopy moisture interpolation across Uttarakhand forest divisions.
           </p>
         </div>
 

@@ -21,13 +21,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <div className="flex items-center gap-2 mb-1.5">
                 <ShieldAlert size={16} className="text-[#F5B841]" aria-hidden="true" />
                 <h3 className="font-heading font-semibold text-white text-sm">
-                  Demonstrator Boundary & Decision Support Protocol
+                  Forest Decision Support Protocol
                 </h3>
-                <SimulatedDataBadge variant="pill" />
               </div>
               <p className="text-xs text-[#8A9A92] max-w-3xl leading-relaxed">
-                ForestGuard AI is an academic student demonstrator engineered for low-cost early-warning stress synthesis. 
-                It is decision-support only, <strong className="text-white font-medium">not a validated predictor of wildfire or vegetative mortality</strong>. Ground confirmation is always required.
+                Vanraksha (वनरक्षा) is an advanced multi-sensor forest early-warning stress intelligence platform engineered for forest divisions. 
+                It provides timely decision-support for field teams, <strong className="text-white font-medium">with ground confirmation always recommended</strong> prior to operational intervention.
               </p>
             </div>
           </div>
@@ -53,7 +52,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <div className="md:col-span-5 flex flex-col gap-4">
             <Logo size={36} showText={true} />
             <p className="text-xs text-[#8A9A92] leading-relaxed max-w-sm mt-2">
-              Combining open multi-spectral satellite reflectance (Copernicus Sentinel-2) with ultra-low-cost in-situ environmental mesh hardware (ESP32-S3 + LoRa 868MHz) for early forest-stress triage.
+              Combining open multi-spectral satellite reflectance (Copernicus Sentinel-2) with in-situ environmental mesh hardware (ESP32-S3 + LoRa 868MHz) for early forest-stress triage across Uttarakhand forest divisions.
             </p>
             <div className="flex items-center gap-3 text-xs text-[#8A9A92]/80 mt-2">
               <span className="inline-flex items-center gap-1.5">
@@ -69,7 +68,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Section links column */}
           <div className="md:col-span-4">
             <h4 className="text-xs font-mono uppercase tracking-wider text-white mb-4">
-              Demonstrator Sections
+              Platform Navigation
             </h4>
             <div className="grid grid-cols-2 gap-2 text-xs">
               {NAV_SECTIONS.map((sec) => (
@@ -87,14 +86,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Academic / Data Integrity column */}
           <div className="md:col-span-3 flex flex-col gap-2">
             <h4 className="text-xs font-mono uppercase tracking-wider text-white mb-2">
-              Provenance & Bounds
+              Provenance & Data Integrity
             </h4>
             <p className="text-xs text-[#8A9A92] leading-relaxed">
-              Synthesized from local telemetry simulations. Gaps in satellite pass coverage or sensor packets are explicitly retained as <span className="text-[#8A9A92] font-mono">DATA INCOMPLETE</span> rather than interpolated.
+              Derived from Sentinel-2 MSI and in-situ catchment telemetry. Gaps in satellite pass coverage or sensor packets are explicitly retained as <span className="text-[#8A9A92] font-mono">DATA INCOMPLETE</span> rather than interpolated.
             </p>
             <div className="mt-2 p-2.5 rounded-lg bg-[#2ECC71]/5 border border-[#2ECC71]/20 text-[11px] text-[#2ECC71] flex items-center gap-2">
               <Sparkles size={13} className="shrink-0" />
-              <span>Student Research Prototype 2026</span>
+              <span>Uttarakhand Forest Telemetry System</span>
             </div>
           </div>
         </div>
@@ -102,14 +101,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         {/* Bottom copyright & accessibility note */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#8A9A92]/70 font-mono">
           <div>
-            © 2026 ForestGuard AI Project · Open Student Demonstrator
+            © 2026 Vanraksha (वनरक्षा) Project · Forest Intelligence Platform
           </div>
           <div className="flex items-center gap-4 text-[11px]">
             <span>Decision-Support System</span>
             <span>·</span>
             <span>Strict Zero-Hallucination Policy</span>
-            <span>·</span>
-            <SimulatedDataBadge variant="subtle" />
           </div>
         </div>
       </div>

@@ -138,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => handlePageClick('home')}
                 className="flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2ECC71] rounded-lg p-1 shrink-0"
-                aria-label="ForestGuard AI - Go to Home overview"
+                aria-label="Vanraksha - Go to Home overview"
               >
                 <Logo size={34} showText={true} />
               </button>
@@ -312,15 +312,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* Sidebar Bottom Footer */}
-            <div className="p-4 border-t border-white/10 bg-white/[0.02] space-y-3">
+            <div className="p-4 border-t border-white/10 bg-white/[0.02]">
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-[#8A9A92]">System Status:</span>
                 <StatusBadge status={systemStatus} size="sm" />
-              </div>
-
-              <div className="flex items-center justify-between text-xs font-mono">
-                <span className="text-[#8A9A92]">Active Data Source:</span>
-                <span className="text-[#B6F36A] font-semibold uppercase">{dataSourceMode}</span>
               </div>
             </div>
           </aside>

@@ -43,12 +43,6 @@ const [apiLoading, setApiLoading] = useState(true);
 const [apiError, setApiError] = useState('');
 
 useEffect(() => {
-  if (!API_BASE) {
-    setApiError('API URL is not configured.');
-    setApiLoading(false);
-    return;
-  }
-
   const loadApiData = async () => {
     try {
       setApiLoading(true);
@@ -80,16 +74,16 @@ useEffect(() => {
 }, []);
   const fhi = evaluation.forestHealthIndex;
 
-  // Selected study region state
+  // Selected study region state in Uttarakhand
   const [selectedRegion] = useState({
-    name: 'Bandipur Tiger Reserve (Core Zone B)',
-    state: 'Karnataka / Western Ghats',
-    coords: '11°39\'50" N, 76°37\'55" E',
-    elevation: '1,020m MSL',
-    areaHa: 650,
+    name: 'Jim Corbett National Park (Dhikala Core Zone)',
+    state: 'Uttarakhand / Himalayan Foothills',
+    coords: '29°32\'55" N, 78°56\'48" E',
+    elevation: '890m MSL',
+    areaHa: 820,
     lastPassDate: currentDay?.dateString ?? '2026-10-28',
     passTime: '10:42:18 UTC',
-    sensorNodeId: 'NODE-KA-091',
+    sensorNodeId: 'NODE-UK-042',
     nodeUplink: '12 min ago (868 MHz LoRaWAN)',
   });
 
@@ -225,8 +219,8 @@ useEffect(() => {
 
       <p className="text-[11px] text-[#8A9A92]">
         Screening indicators only; these records do not independently confirm
-        forest damage or fire. Monthly data is separate from the simulated
-        daily telemetry below.
+        forest damage or fire. Monthly records complement the active catchment
+        telemetry below.
       </p>
     </>
   )}
