@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useForest } from '../../lib/ForestContext';
 import { StatusBadge } from '../StatusBadge';
-import { AlertTriangle, CheckCircle2, ShieldAlert, ArrowRight, Clock, Info, Sparkles } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ShieldAlert, ArrowRight, Clock, Info, Sparkles, X } from 'lucide-react';
 import { ExplainAlertModal } from '../ExplainAlertModal';
+import { ExplainCandidatePanel } from './ExplainCandidatePanel';
+import { POTENTIAL_CHANGE_CANDIDATES } from '../../data/candidateData';
 
 export const AlertExplanationCard: React.FC = () => {
   const { evaluation, status, currentDay } = useForest();
   const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
+  const [isCandidateExplainOpen, setIsCandidateExplainOpen] = useState(false);
   const { flags, cooldownActive, daysSinceLastAlert, settingsUsed } = evaluation;
 
   const flagList = [
@@ -140,16 +143,43 @@ export const AlertExplanationCard: React.FC = () => {
           * Human decision-support only. Automatic intervention or emergency dispatch is never executed.
         </div>
 
-        {/* Explain this alert button */}
-        <button
-          type="button"
-          onClick={() => setIsExplainModalOpen(true)}
-          className="w-full py-2.5 px-3 rounded-xl bg-[#2ECC71]/15 hover:bg-[#2ECC71]/25 border border-[#2ECC71]/35 text-[#B6F36A] font-semibold text-xs transition-all flex items-center justify-center gap-2 shadow-[0_0_12px_rgba(46,204,113,0.15)] group"
-        >
-          <Sparkles size={14} className="group-hover:rotate-12 transition-transform" />
-          <span>Explain this alert (Gemini AI)</span>
-        </button>
+        {/* Action Buttons: Explain Alert (Data-Driven Scorecard) + AI Chat */}
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => setIsCandidateExplainOpen(true)}
+            className="w-full py-2.5 px-3 rounded-xl bg-[#2ECC71] hover:bg-[#B6F36A] text-[#06120C] font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(46,204,113,0.3)] group"
+          >
+            <ShieldAlert size={14} className="text-[#06120C]" />
+            <span>Explain Why This Area Was Flagged</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsExplainModalOpen(true)}
+            className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[#8A9A92] hover:text-white font-medium text-xs transition-all flex items-center justify-center gap-2 group"
+          >
+            <Sparkles size={13} className="text-[#B6F36A] group-hover:rotate-12 transition-transform" />
+            <span>Explain Alert with Gemini AI</span>
+          </button>
+        </div>
       </div>
+
+      {/* Dedicated Explain Why This Area Was Flagged Modal */}
+      {isCandidateExplainOpen && (
+        <div 
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-thin">
+            <ExplainCandidatePanel
+              candidate={POTENTIAL_CHANGE_CANDIDATES[0]}
+              onClose={() => setIsCandidateExplainOpen(false)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Gemini AI Alert Explanation Modal */}
       <ExplainAlertModal

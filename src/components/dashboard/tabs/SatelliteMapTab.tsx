@@ -7,6 +7,11 @@ import React, { useState } from 'react';
 import { useForest } from '../../../lib/ForestContext';
 import { ForestStatus } from '../../../lib/types';
 import { StatusBadge } from '../../StatusBadge';
+import { ExplainCandidatePanel } from '../ExplainCandidatePanel';
+import { 
+  POTENTIAL_CHANGE_CANDIDATES, 
+  PotentialChangeCandidate 
+} from '../../../data/candidateData';
 import { 
   Layers, 
   Map as MapIcon, 
@@ -16,13 +21,16 @@ import {
   Maximize2, 
   Crosshair, 
   ShieldCheck,
+  ShieldAlert,
   Info,
   Camera,
   Sun,
-  Activity
+  Activity,
+  AlertTriangle,
+  Flame
 } from 'lucide-react';
 
-type ImageryBand = 'rgb' | 'nir' | 'thermal' | 'elevation';
+type ImageryBand = 'rgb' | 'nir' | 'thermal' | 'candidates';
 
 interface CatchmentZone {
   id: string;
@@ -42,7 +50,10 @@ export const SatelliteMapTab: React.FC = () => {
   const [selectedBand, setSelectedBand] = useState<ImageryBand>('nir');
   const [showGrid, setShowGrid] = useState<boolean>(true);
   const [showSensor, setShowSensor] = useState<boolean>(true);
+  const [showCandidatePins, setShowCandidatePins] = useState<boolean>(true);
   const [selectedZone, setSelectedZone] = useState<CatchmentZone | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<PotentialChangeCandidate | null>(null);
+  const [sidebarTab, setSidebarTab] = useState<'zones' | 'candidates'>('zones');
   const [zoomLevel, setZoomLevel] = useState<number>(1);
 
   const zones: CatchmentZone[] = [
@@ -156,9 +167,36 @@ export const SatelliteMapTab: React.FC = () => {
             >
               Thermal / Desiccation
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedBand('candidates');
+                setSidebarTab('candidates');
+              }}
+              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                selectedBand === 'candidates'
+                  ? 'bg-[#E5533D]/25 text-[#E5533D] font-bold border border-[#E5533D]/50 shadow-[0_0_12px_rgba(229,83,61,0.3)]'
+                  : 'text-[#8A9A92] hover:text-white'
+              }`}
+            >
+              <Flame size={12} className={selectedBand === 'candidates' ? 'text-[#E5533D]' : 'text-[#F5B841]'} />
+              <span>Change Candidates</span>
+            </button>
           </div>
 
           {/* Layer toggles */}
+          <button
+            type="button"
+            onClick={() => setShowCandidatePins(!showCandidatePins)}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-mono transition-all flex items-center gap-1.5 ${
+              showCandidatePins
+                ? 'bg-[#E5533D]/15 border-[#E5533D]/40 text-white'
+                : 'bg-white/[0.02] border-white/5 text-[#8A9A92]'
+            }`}
+          >
+            <ShieldAlert size={13} className={showCandidatePins ? 'text-[#E5533D]' : ''} />
+            <span>Candidate Pins</span>
+          </button>
           <button
             type="button"
             onClick={() => setShowGrid(!showGrid)}
@@ -242,15 +280,30 @@ export const SatelliteMapTab: React.FC = () => {
               </defs>
 
               {/* Base Raster Surface */}
-              <rect 
-                width="560" 
-                height="360" 
-                fill={
-                  selectedBand === 'nir' ? 'url(#nirBioGradient)' :
-                  selectedBand === 'rgb' ? 'url(#rgbBioGradient)' :
-                  'url(#thermalBioGradient)'
-                } 
-              />
+              {selectedBand === 'candidates' ? (
+                <>
+                  <rect width="560" height="360" fill="#08140B" />
+                  <image
+                    href="/assets/aistudio/ForestGuardAI_Change_Candidates_9dfc25af.png"
+                    x="0"
+                    y="0"
+                    width="560"
+                    height="360"
+                    preserveAspectRatio="xMidYMid slice"
+                    opacity="0.88"
+                  />
+                </>
+              ) : (
+                <rect 
+                  width="560" 
+                  height="360" 
+                  fill={
+                    selectedBand === 'nir' ? 'url(#nirBioGradient)' :
+                    selectedBand === 'rgb' ? 'url(#rgbBioGradient)' :
+                    'url(#thermalBioGradient)'
+                  } 
+                />
+              )}
 
               {/* Grid Overlay */}
               {showGrid && (
@@ -266,19 +319,22 @@ export const SatelliteMapTab: React.FC = () => {
 
               {/* Catchment Micro-Zones */}
               {zones.map((z) => {
-                const isSelected = selectedZone?.id === z.id;
+                const isSelected = selectedZone?.id === z.id && !selectedCandidate;
                 const strokeColor = getStatusColor(z.relativeStatus);
 
                 return (
                   <g 
                     key={z.id}
-                    onClick={() => setSelectedZone(z)}
+                    onClick={() => {
+                      setSelectedZone(z);
+                      setSelectedCandidate(null);
+                    }}
                     className="cursor-pointer transition-all duration-200 group"
                   >
                     <polygon
                       points={z.polygonPoints}
                       fill={strokeColor}
-                      fillOpacity={isSelected ? 0.35 : 0.15}
+                      fillOpacity={isSelected ? 0.35 : selectedBand === 'candidates' ? 0.08 : 0.15}
                       stroke={strokeColor}
                       strokeWidth={isSelected ? 2.5 : 1.2}
                       className="transition-all duration-200 hover:fill-opacity-30"
@@ -293,6 +349,63 @@ export const SatelliteMapTab: React.FC = () => {
                       className="pointer-events-none select-none font-bold"
                     >
                       {z.name.split(':')[0]}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Potential Change Candidate Hotspot Markers */}
+              {showCandidatePins && POTENTIAL_CHANGE_CANDIDATES.map((cand) => {
+                const isCandSelected = selectedCandidate?.id === cand.id;
+                return (
+                  <g 
+                    key={cand.id} 
+                    onClick={() => {
+                      setSelectedCandidate(cand);
+                      setSelectedZone(null);
+                    }}
+                    className="cursor-pointer group"
+                  >
+                    {/* Pulsing Target Ring */}
+                    <circle 
+                      cx={cand.mapCoordinates.x} 
+                      cy={cand.mapCoordinates.y} 
+                      r={isCandSelected ? 18 : 12} 
+                      fill="#E5533D" 
+                      fillOpacity={isCandSelected ? 0.45 : 0.22} 
+                      stroke="#E5533D" 
+                      strokeWidth={isCandSelected ? 2.5 : 1.2} 
+                      className="animate-pulse" 
+                    />
+                    <circle 
+                      cx={cand.mapCoordinates.x} 
+                      cy={cand.mapCoordinates.y} 
+                      r="4.5" 
+                      fill="#E5533D" 
+                      stroke="#FFFFFF" 
+                      strokeWidth="1.5" 
+                    />
+                    <rect 
+                      x={cand.mapCoordinates.x - 30} 
+                      y={cand.mapCoordinates.y + 8} 
+                      width="60" 
+                      height="15" 
+                      rx="3" 
+                      fill="#06120C" 
+                      fillOpacity="0.9" 
+                      stroke={isCandSelected ? '#E5533D' : 'rgba(255,255,255,0.2)'} 
+                      strokeWidth="1" 
+                    />
+                    <text 
+                      x={cand.mapCoordinates.x} 
+                      y={cand.mapCoordinates.y + 19} 
+                      fill={isCandSelected ? '#FFAA99' : '#FFFFFF'} 
+                      fontSize="8" 
+                      fontFamily="monospace" 
+                      fontWeight="bold" 
+                      textAnchor="middle"
+                    >
+                      {cand.id}
                     </text>
                   </g>
                 );
@@ -338,8 +451,42 @@ export const SatelliteMapTab: React.FC = () => {
               </g>
             </svg>
 
-            {/* Floating Inspector Tooltip if zone is selected */}
-            {selectedZone && (
+            {/* Floating Inspector Tooltip for Candidate or Zone */}
+            {selectedCandidate ? (
+              <div className="absolute bottom-3 left-3 right-3 p-3.5 rounded-xl bg-black/90 backdrop-blur-md border border-[#E5533D]/40 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 z-10 shadow-2xl animate-in fade-in duration-200">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 rounded bg-[#E5533D]/20 text-[#E5533D] font-mono font-bold text-[10px] border border-[#E5533D]/40">
+                      CANDIDATE {selectedCandidate.id}
+                    </span>
+                    <span className="font-bold text-white text-sm">{selectedCandidate.name}</span>
+                  </div>
+                  <span className="text-[#8A9A92] font-mono text-[11px] block">
+                    {selectedCandidate.coords} · {selectedCandidate.elevation} · {selectedCandidate.evidenceStatus}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      const el = document.getElementById('explain-candidate-section');
+                      el?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2ECC71] text-[#06120C] font-mono font-bold text-xs hover:bg-[#B6F36A] transition-all shadow-md"
+                  >
+                    <ShieldAlert size={13} />
+                    <span>Explain This Alert</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setSelectedCandidate(null)}
+                    className="text-[#8A9A92] hover:text-white px-2 py-1.5 rounded-lg bg-white/10 font-mono text-xs"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : selectedZone ? (
               <div className="absolute bottom-3 left-3 right-3 p-3 rounded-lg bg-black/85 backdrop-blur-md border border-white/15 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 z-10">
                 <div>
                   <span className="font-bold text-white block">{selectedZone.name}</span>
@@ -356,70 +503,158 @@ export const SatelliteMapTab: React.FC = () => {
                   </button>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Footer Metadata */}
           <div className="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-[#8A9A92]">
-            <span>Click any catchment zone polygon to inspect localized biophysical properties.</span>
+            <span>Click any change candidate pin or catchment zone to inspect localized biophysical properties.</span>
             <span className="text-[#2ECC71]">L2A Surface Reflectance Corrected</span>
           </div>
         </div>
 
-        {/* Right Stage: Catchment Zone Diagnostics */}
+        {/* Right Stage: Dual Tab Sidebar (Zones vs Candidates) */}
         <div className="lg:col-span-4 space-y-4">
           <div className="glass-card p-5 border border-white/10">
-            <h4 className="text-sm font-mono uppercase tracking-wider text-white mb-3 flex items-center gap-2">
-              <Layers size={14} className="text-[#2ECC71]" />
-              <span>Catchment Sub-Units</span>
-            </h4>
-
-            <div className="space-y-2.5">
-              {zones.map(z => {
-                const isSelected = selectedZone?.id === z.id;
-                return (
-                  <div
-                    key={z.id}
-                    onClick={() => setSelectedZone(z)}
-                    className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                      isSelected 
-                        ? 'bg-white/[0.08] border-[#2ECC71]/50 text-white' 
-                        : 'bg-white/[0.02] border-white/5 text-[#8A9A92] hover:bg-white/[0.04] hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-heading font-semibold text-white text-sm">
-                        {z.name.split(':')[0]}
-                      </span>
-                      <StatusBadge status={z.relativeStatus} size="sm" />
-                    </div>
-                    <div className="text-xs font-mono text-[#8A9A92] flex items-center justify-between">
-                      <span>{z.areaHa} ha</span>
-                      <span>{z.elevationM}</span>
-                    </div>
-                    {z.hasHardwareNode && (
-                      <div className="mt-2 text-[10px] font-mono text-[#2ECC71] flex items-center gap-1">
-                        <Radio size={11} />
-                        <span>In-situ Node #1 Active</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            {/* Sidebar Tab Switcher */}
+            <div className="flex items-center justify-between p-1 rounded-xl bg-white/[0.04] border border-white/10 mb-4 text-xs font-mono">
+              <button
+                type="button"
+                onClick={() => setSidebarTab('zones')}
+                className={`flex-1 py-1.5 px-2 rounded-lg transition-all text-center ${
+                  sidebarTab === 'zones'
+                    ? 'bg-white/15 text-white font-bold'
+                    : 'text-[#8A9A92] hover:text-white'
+                }`}
+              >
+                Catchment Zones
+              </button>
+              <button
+                type="button"
+                onClick={() => setSidebarTab('candidates')}
+                className={`flex-1 py-1.5 px-2 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 ${
+                  sidebarTab === 'candidates'
+                    ? 'bg-[#E5533D]/25 text-[#FFAA99] font-bold border border-[#E5533D]/40'
+                    : 'text-[#8A9A92] hover:text-white'
+                }`}
+              >
+                <Flame size={12} className="text-[#E5533D]" />
+                <span>Candidates (4)</span>
+              </button>
             </div>
+
+            {sidebarTab === 'zones' ? (
+              <div className="space-y-2.5">
+                {zones.map(z => {
+                  const isSelected = selectedZone?.id === z.id && !selectedCandidate;
+                  return (
+                    <div
+                      key={z.id}
+                      onClick={() => {
+                        setSelectedZone(z);
+                        setSelectedCandidate(null);
+                      }}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        isSelected 
+                          ? 'bg-white/[0.08] border-[#2ECC71]/50 text-white' 
+                          : 'bg-white/[0.02] border-white/5 text-[#8A9A92] hover:bg-white/[0.04] hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-heading font-semibold text-white text-sm">
+                          {z.name.split(':')[0]}
+                        </span>
+                        <StatusBadge status={z.relativeStatus} size="sm" />
+                      </div>
+                      <div className="text-xs font-mono text-[#8A9A92] flex items-center justify-between">
+                        <span>{z.areaHa} ha</span>
+                        <span>{z.elevationM}</span>
+                      </div>
+                      {z.hasHardwareNode && (
+                        <div className="mt-2 text-[10px] font-mono text-[#2ECC71] flex items-center gap-1">
+                          <Radio size={11} />
+                          <span>In-situ Node #1 Active</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              /* Candidates List in Sidebar */
+              <div className="space-y-2.5">
+                {POTENTIAL_CHANGE_CANDIDATES.map((cand) => {
+                  const isSelected = selectedCandidate?.id === cand.id;
+                  return (
+                    <div
+                      key={cand.id}
+                      onClick={() => {
+                        setSelectedCandidate(cand);
+                        setSelectedZone(null);
+                      }}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        isSelected
+                          ? 'bg-[#E5533D]/15 border-[#E5533D]/60 text-white shadow-md'
+                          : 'bg-white/[0.02] border-white/5 text-[#8A9A92] hover:bg-white/[0.04] hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono font-bold text-[#FFAA99] text-xs">
+                          {cand.id}
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F5B841]/20 text-[#F5B841] border border-[#F5B841]/30">
+                          Preliminary
+                        </span>
+                      </div>
+                      <div className="font-heading font-bold text-white text-xs mb-1 truncate">
+                        {cand.sectorId}
+                      </div>
+                      <div className="text-[11px] font-mono text-[#8A9A92] flex items-center justify-between">
+                        <span>NDVI: {cand.scorecard.ndvi.status}</span>
+                        <span>NDMI: {cand.scorecard.ndmi.status}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCandidate(cand);
+                          setSelectedZone(null);
+                          const el = document.getElementById('explain-candidate-section');
+                          el?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="mt-2 w-full py-1.5 px-2 rounded-lg bg-[#2ECC71]/15 hover:bg-[#2ECC71]/25 text-[#B6F36A] border border-[#2ECC71]/35 font-mono text-[11px] font-bold flex items-center justify-center gap-1"
+                      >
+                        <ShieldAlert size={12} />
+                        <span>Explain This Alert</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="glass-card p-5 border border-white/10 space-y-3 text-xs font-mono text-[#8A9A92]">
             <span className="text-[11px] font-bold uppercase text-white flex items-center gap-1.5">
               <Info size={13} className="text-[#38BDF8]" />
-              <span>Spectral Band Configuration</span>
+              <span>Change Detection Layer</span>
             </span>
             <p className="leading-relaxed">
-              NIR Band 8 (842 nm) reflects healthy leaf cellular structure. SWIR Band 11 (1610 nm) absorbs moisture. The ratio directly indexes forest canopy desiccation.
+              Potential change candidates are identified via multi-temporal Sentinel-2 MSI L2A reflectance screening. Candidates require localized biophysical explainability verification before field crew dispatch.
             </p>
           </div>
         </div>
       </div>
+
+      {/* DEDICATED "EXPLAIN WHY THIS AREA WAS FLAGGED" SECTION (When candidate is selected) */}
+      {selectedCandidate && (
+        <div id="explain-candidate-section" className="mt-8 animate-in fade-in duration-300">
+          <ExplainCandidatePanel 
+            candidate={selectedCandidate} 
+            onClose={() => setSelectedCandidate(null)} 
+          />
+        </div>
+      )}
     </div>
   );
 };

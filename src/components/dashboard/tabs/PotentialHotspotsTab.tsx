@@ -8,14 +8,26 @@ import { useForest } from '../../../lib/ForestContext';
 import { ForestStatus } from '../../../lib/types';
 import { StressFlag } from '../../../lib/ruleEngine';
 import { ExplainAlertModal } from '../../ExplainAlertModal';
+import { ExplainCandidatePanel } from '../ExplainCandidatePanel';
+import { 
+  POTENTIAL_CHANGE_CANDIDATES, 
+  PotentialChangeCandidate 
+} from '../../../data/candidateData';
 import { 
   Flame, 
   MapPin, 
-  Sparkles
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  ShieldAlert,
+  HelpCircle,
+  Layers,
+  Activity
 } from 'lucide-react';
 
 interface HotspotItem {
   id: string;
+  candidateId: string;
   sector: string;
   name: string;
   coords: string;
@@ -37,6 +49,7 @@ export const PotentialHotspotsTab: React.FC = () => {
   const { currentDay, status, dataset, dayIndex } = useForest();
   const [isExplainModalOpen, setIsExplainModalOpen] = useState<boolean>(false);
   const [activeExplainItem, setActiveExplainItem] = useState<HotspotItem | null>(null);
+  const [expandedCandidateId, setExpandedCandidateId] = useState<string | null>('CC-2026-DH04');
 
   // Compute 14d rainfall
   const recentDays = dataset.slice(Math.max(0, dayIndex - 13), dayIndex + 1);
@@ -56,6 +69,7 @@ export const PotentialHotspotsTab: React.FC = () => {
   const hotspots: HotspotItem[] = [
     {
       id: 'hs-1',
+      candidateId: 'CC-2026-DH04',
       sector: 'Sector Dhikala-4',
       name: 'Chir Pine Crest & Shallow Loam, Corbett Reserve',
       coords: '29°32\'42" N, 78°56\'38" E',
@@ -79,6 +93,7 @@ export const PotentialHotspotsTab: React.FC = () => {
     },
     {
       id: 'hs-2',
+      candidateId: 'CC-2026-BJ02',
       sector: 'Sector Bijrani-2',
       name: 'Upper Kanda Ridge Escarpment, Uttarakhand',
       coords: '29°33\'15" N, 78°57\'12" E',
@@ -100,6 +115,7 @@ export const PotentialHotspotsTab: React.FC = () => {
     },
     {
       id: 'hs-3',
+      candidateId: 'CC-2026-SN03',
       sector: 'Sector Sona-3',
       name: 'Ramganga Riverine LoRa Cluster, Corbett',
       coords: '29°31\'50" N, 78°55\'40" E',
@@ -121,6 +137,7 @@ export const PotentialHotspotsTab: React.FC = () => {
     },
     {
       id: 'hs-4',
+      candidateId: 'CC-2026-DG01',
       sector: 'Sector Dhangarhi-1',
       name: 'Corbett Sal & Mixed Deciduous Foothills',
       coords: '29°34\'10" N, 78°58\'20" E',
@@ -175,98 +192,168 @@ export const PotentialHotspotsTab: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono text-[#8A9A92]">
-          <span className="text-white font-bold">{hotspots.length} Monitored Sectors</span>
+          <span className="text-white font-bold">{hotspots.length} Monitored Candidates</span>
           <span className="text-white/20">•</span>
-          <span>Rule Engine v2.4 (Sentinel-2 + Capacitive Telemetry)</span>
+          <span>Rule Engine v2.4 (Sentinel-2 + In-Situ Mesh)</span>
+        </div>
+      </div>
+
+      {/* Explanatory Feature Callout */}
+      <div className="p-4 rounded-xl bg-gradient-to-r from-[#2ECC71]/15 via-white/[0.03] to-transparent border border-[#2ECC71]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#B6F36A] uppercase mb-1">
+            <ShieldAlert size={14} className="text-[#2ECC71]" />
+            <span>Explainable Monitoring Engine</span>
+          </div>
+          <p className="text-xs font-sans text-[#E5EFE9]">
+            Click <strong className="text-white font-bold">&quot;Explain This Alert&quot;</strong> on any candidate to inspect why the area was flagged, measured NDVI/NDMI deltas, and evidence status.
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0 text-[11px] font-mono text-[#8A9A92]">
+          <span>Select Candidate:</span>
+          {hotspots.map((h) => (
+            <button
+              key={h.id}
+              type="button"
+              onClick={() => setExpandedCandidateId(expandedCandidateId === h.candidateId ? null : h.candidateId)}
+              className={`px-2 py-1 rounded text-[10px] font-bold border transition-all ${
+                expandedCandidateId === h.candidateId
+                  ? 'bg-[#2ECC71]/20 text-[#B6F36A] border-[#2ECC71]/50'
+                  : 'bg-white/5 text-[#8A9A92] border-white/10 hover:text-white'
+              }`}
+            >
+              {h.candidateId}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Hotspots Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {hotspots.map((hs) => (
-          <div
-            key={hs.id}
-            className={`glass-card p-6 border transition-all duration-300 relative flex flex-col justify-between ${
-              hs.severity === 'Critical'
-                ? 'border-[#E5533D]/40 hover:border-[#E5533D]/70 bg-[#E5533D]/[0.02]'
-                : hs.severity === 'Moderate'
-                ? 'border-[#F5B841]/40 hover:border-[#F5B841]/70 bg-[#F5B841]/[0.02]'
-                : 'border-white/10 hover:border-white/20'
-            }`}
-          >
-            <div>
-              {/* Header */}
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2 text-xs font-mono">
-                  <MapPin size={13} className="text-[#2ECC71]" />
-                  <span className="font-bold text-white">{hs.sector}</span>
-                  <span className="text-white/20">•</span>
-                  <span className="text-[#8A9A92]">{hs.coords}</span>
+        {hotspots.map((hs) => {
+          const matchedCandidate = POTENTIAL_CHANGE_CANDIDATES.find(c => c.id === hs.candidateId);
+          const isExpanded = expandedCandidateId === hs.candidateId;
+
+          return (
+            <div
+              key={hs.id}
+              className={`glass-card p-6 border transition-all duration-300 relative flex flex-col justify-between ${
+                isExpanded
+                  ? 'md:col-span-2 border-[#2ECC71]/50 bg-[#0B2315]/20 ring-1 ring-[#2ECC71]/30 shadow-[0_0_24px_rgba(46,204,113,0.15)]'
+                  : hs.severity === 'Critical'
+                  ? 'border-[#E5533D]/40 hover:border-[#E5533D]/70 bg-[#E5533D]/[0.02]'
+                  : hs.severity === 'Moderate'
+                  ? 'border-[#F5B841]/40 hover:border-[#F5B841]/70 bg-[#F5B841]/[0.02]'
+                  : 'border-white/10 hover:border-white/20'
+              }`}
+            >
+              <div>
+                {/* Header */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2 text-xs font-mono">
+                    <MapPin size={13} className="text-[#2ECC71]" />
+                    <span className="font-bold text-[#B6F36A] px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+                      {hs.candidateId}
+                    </span>
+                    <span className="font-bold text-white">{hs.sector}</span>
+                    <span className="text-white/20">•</span>
+                    <span className="text-[#8A9A92]">{hs.coords}</span>
+                  </div>
+                  {getSeverityBadge(hs.severity)}
                 </div>
-                {getSeverityBadge(hs.severity)}
+
+                <h4 className="text-lg font-heading font-bold text-white mb-2">
+                  {hs.name}
+                </h4>
+
+                {/* Primary Trigger Callout */}
+                <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5 mb-4">
+                  <span className="text-[10px] uppercase font-mono text-[#8A9A92] block mb-0.5">Primary Indicator:</span>
+                  <p className="text-xs font-mono text-white font-medium leading-relaxed">
+                    {hs.primaryIndicator}
+                  </p>
+                </div>
+
+                {/* Indicator Metrics Matrix */}
+                <div className="space-y-2 mb-4">
+                  <span className="text-[10px] uppercase font-mono text-[#8A9A92] block">Telemetry Parameters:</span>
+                  <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                    {hs.indicators.map((ind, i) => (
+                      <div 
+                        key={i} 
+                        className={`p-2 rounded border ${
+                          ind.isTriggered 
+                            ? 'bg-white/[0.04] border-[#F5B841]/30 text-white' 
+                            : 'bg-white/[0.01] border-white/5 text-[#8A9A92]'
+                        }`}
+                      >
+                        <span className="text-[10px] text-[#8A9A92] block truncate">{ind.label}</span>
+                        <span className={`font-semibold ${ind.isTriggered ? 'text-[#F5B841]' : 'text-white'}`}>
+                          {ind.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Divergence note */}
+                <div className="text-xs font-mono text-[#8A9A92] mb-4">
+                  <span className="text-white font-medium">Sensor Coupling:</span> {hs.divergenceNote}
+                </div>
               </div>
 
-              <h4 className="text-lg font-heading font-bold text-white mb-2">
-                {hs.name}
-              </h4>
+              {/* Bottom Actions: Explain This Alert + Suggested field check */}
+              <div className="pt-3 border-t border-white/5 space-y-3">
+                <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 text-xs font-mono text-[#B6F36A]">
+                  <strong className="text-white block text-[10px] uppercase mb-0.5">Suggested Field Verification:</strong>
+                  {hs.fieldAction}
+                </div>
 
-              {/* Primary Trigger Callout */}
-              <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5 mb-4">
-                <span className="text-[10px] uppercase font-mono text-[#8A9A92] block mb-0.5">Primary Indicator:</span>
-                <p className="text-xs font-mono text-white font-medium leading-relaxed">
-                  {hs.primaryIndicator}
-                </p>
-              </div>
-
-              {/* Indicator Metrics Matrix */}
-              <div className="space-y-2 mb-4">
-                <span className="text-[10px] uppercase font-mono text-[#8A9A92] block">Telemetry Parameters:</span>
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                  {hs.indicators.map((ind, i) => (
-                    <div 
-                      key={i} 
-                      className={`p-2 rounded border ${
-                        ind.isTriggered 
-                          ? 'bg-white/[0.04] border-[#F5B841]/30 text-white' 
-                          : 'bg-white/[0.01] border-white/5 text-[#8A9A92]'
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[11px] font-mono text-[#8A9A92]">Elevation: {hs.elevation}</span>
+                  
+                  <div className="flex items-center gap-2">
+                    {/* PRIMARY FEATURE BUTTON: Explain This Alert / Explain Why This Area Was Flagged */}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedCandidateId(isExpanded ? null : hs.candidateId)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2ECC71] ${
+                        isExpanded
+                          ? 'bg-[#2ECC71] text-[#06120C] shadow-[0_0_15px_rgba(46,204,113,0.4)]'
+                          : 'bg-[#2ECC71]/20 hover:bg-[#2ECC71]/30 text-[#B6F36A] border border-[#2ECC71]/40'
                       }`}
                     >
-                      <span className="text-[10px] text-[#8A9A92] block truncate">{ind.label}</span>
-                      <span className={`font-semibold ${ind.isTriggered ? 'text-[#F5B841]' : 'text-white'}`}>
-                        {ind.value}
-                      </span>
-                    </div>
-                  ))}
+                      <ShieldAlert size={13} className={isExpanded ? 'text-[#06120C]' : 'text-[#2ECC71]'} />
+                      <span>{isExpanded ? 'Hide Explanation' : 'Explain This Alert'}</span>
+                      {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                    </button>
+
+                    {/* Secondary LLM button */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenExplain(hs)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[#8A9A92] hover:text-white border border-white/10 text-xs font-mono font-medium transition-all"
+                      title="AI Chat Brief"
+                    >
+                      <Sparkles size={12} />
+                      <span className="hidden sm:inline">AI Brief</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Divergence note */}
-              <div className="text-xs font-mono text-[#8A9A92] mb-4">
-                <span className="text-white font-medium">Sensor Coupling:</span> {hs.divergenceNote}
+                {/* EXPANDED "EXPLAIN WHY THIS AREA WAS FLAGGED" PANEL */}
+                {isExpanded && matchedCandidate && (
+                  <div className="mt-4 pt-4 border-t border-[#2ECC71]/20 animate-in fade-in zoom-in-95 duration-200">
+                    <ExplainCandidatePanel 
+                      candidate={matchedCandidate} 
+                      onClose={() => setExpandedCandidateId(null)} 
+                    />
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Bottom Actions: Suggested field check + AI Explain */}
-            <div className="pt-3 border-t border-white/5 space-y-3">
-              <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 text-xs font-mono text-[#B6F36A]">
-                <strong className="text-white block text-[10px] uppercase mb-0.5">Suggested Field Verification:</strong>
-                {hs.fieldAction}
-              </div>
-
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] font-mono text-[#8A9A92]">Elevation: {hs.elevation}</span>
-                <button
-                  type="button"
-                  onClick={() => handleOpenExplain(hs)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2ECC71]/15 hover:bg-[#2ECC71]/25 text-[#B6F36A] border border-[#2ECC71]/40 text-xs font-mono font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2ECC71]"
-                >
-                  <Sparkles size={13} />
-                  <span>Explain with Gemini</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Explanatory Modal using Gemini API */}

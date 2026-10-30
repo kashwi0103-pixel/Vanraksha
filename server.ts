@@ -14,6 +14,7 @@ import {
   getAlertSummary,
   type AlertLevel,
 } from './src/data/mockApiData.ts';
+import { POTENTIAL_CHANGE_CANDIDATES } from './src/data/candidateData.ts';
 
 const app = express();
 const port = 3000;
@@ -82,6 +83,10 @@ const handleSummary = (_req: Request, res: Response) => {
   res.json(getAlertSummary());
 };
 
+const handleCandidates = (_req: Request, res: Response) => {
+  res.json(POTENTIAL_CHANGE_CANDIDATES);
+};
+
 // Register routes both at root and /api for compatibility
 app.get('/health', handleHealth);
 app.get('/api/health', handleHealth);
@@ -97,6 +102,9 @@ app.get('/api/alerts', handleAlerts);
 
 app.get('/summary', handleSummary);
 app.get('/api/summary', handleSummary);
+
+app.get('/candidates', handleCandidates);
+app.get('/api/candidates', handleCandidates);
 
 // Gemini AI Explanation Endpoint
 app.post('/api/explain-alert', async (req: Request, res: Response) => {
