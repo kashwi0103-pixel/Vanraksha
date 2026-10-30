@@ -102,10 +102,10 @@ export const PotentialHotspotsTab: React.FC = () => {
       status: 'WATCH',
       primaryIndicator: 'Persistent thermal elevation (>34.2°C) with elevated VPD',
       indicators: [
+        { label: 'NDVI Vegetation Greenness', value: '0.62 (Δ -0.08, breaches -0.05)', isTriggered: true },
+        { label: 'NDMI Canopy Moisture', value: '0.20 (Δ -0.12, breaches -0.05)', isTriggered: true },
         { label: 'Ambient Temperature', value: '34.8°C (+4.2°C anomaly)', isTriggered: true },
-        { label: 'VPD Atmospheric Pull', value: '2.62 kPa (High transpiration)', isTriggered: true },
-        { label: 'NDVI Canopy Vigor', value: '0.62 (Mild drop from 0.70)', isTriggered: false },
-        { label: 'Rainfall Deficit', value: '16 days rainless', isTriggered: true },
+        { label: 'Rainfall Deficit', value: '16 days rainless (2.5mm)', isTriggered: true },
       ],
       divergenceNote: 'Canopy still retains green chlorophyll but leaf moisture is actively dropping.',
       fieldAction: 'Visual binocular survey from Watchtower 3 for crown thinning or dry fuel accumulation.',

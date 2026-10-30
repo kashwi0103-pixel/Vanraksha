@@ -94,7 +94,7 @@ function AppContent() {
       >
         <div className="flex flex-col gap-1.5">
           <div className="pointer-events-auto inline-flex items-center gap-1 p-1 rounded-full bg-[#06120C]/90 backdrop-blur-xl border border-white/10 shadow-lg text-[11px] font-mono overflow-x-auto max-w-full">
-            <span className="px-2 text-[#8A9A92] hidden lg:inline shrink-0">Scenario:</span>
+            <span className="px-2 text-[#F5B841] font-bold hidden lg:inline shrink-0">Simulated Scenario:</span>
             {scenarios.map((sc) => {
               const isActive = scenario === sc;
               return (
@@ -107,7 +107,7 @@ function AppContent() {
                       : 'text-[#8A9A92] hover:text-white hover:bg-white/[0.04]'
                   }`}
                   aria-pressed={isActive}
-                  title={`Simulate ${sc}`}
+                  title={`Simulated test scenario: ${sc}`}
                 >
                   {sc}
                 </button>

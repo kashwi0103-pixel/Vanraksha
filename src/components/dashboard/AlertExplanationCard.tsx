@@ -7,7 +7,7 @@ import { ExplainCandidatePanel } from './ExplainCandidatePanel';
 import { POTENTIAL_CHANGE_CANDIDATES } from '../../data/candidateData';
 
 export const AlertExplanationCard: React.FC = () => {
-  const { evaluation, status, currentDay } = useForest();
+  const { evaluation, status, currentDay, scenario, dataSourceMode } = useForest();
   const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
   const [isCandidateExplainOpen, setIsCandidateExplainOpen] = useState(false);
   const { flags, cooldownActive, daysSinceLastAlert, settingsUsed } = evaluation;
@@ -67,8 +67,26 @@ export const AlertExplanationCard: React.FC = () => {
           Stress Flag Analysis & Reasoning
         </h3>
 
+        {/* Status Determination & Source Indicator */}
+        <div className="mb-3 p-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-[11px] font-mono space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[#8A9A92]">Telemetry Source:</span>
+            <span className="text-white font-semibold">
+              {dataSourceMode === 'simulated' ? `Simulated Scenario (${scenario})` : 'Uploaded In-Situ Telemetry'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-[#8A9A92]">Status Determination:</span>
+            <span className="text-[#B6F36A] font-semibold">
+              {evaluation.sensorValidity.isValid
+                ? `${evaluation.triggeredFlagCount} active flags → ${status}`
+                : 'Sensor fault/timeout → DATA INCOMPLETE'}
+            </span>
+          </div>
+        </div>
+
         <p className="text-xs text-[#8A9A92] leading-relaxed mb-4 font-sans">
-          Evaluates 3 independent telemetry vectors to prevent single-sensor false alarms. Strict protocol requires 2+ independent signals with verified data before escalating to field action.
+          Evaluates 3 independent telemetry vectors to prevent single-sensor false alarms: 0 flags = NORMAL MONITORING, 1 flag = WATCH, 2+ flags = FIELD CHECK RECOMMENDED. Catchment triage thresholds (NDVI drop ≥ 0.12, soil &lt; 22%) operate alongside preliminary satellite candidate screening (Δ &lt; -0.05).
         </p>
 
         {/* Cooldown active alert banner */}

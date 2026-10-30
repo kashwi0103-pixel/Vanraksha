@@ -3,7 +3,7 @@ import { useForest } from '../../lib/ForestContext';
 import { CloudRain, Thermometer, Database } from 'lucide-react';
 
 export const WeatherContextCard: React.FC = () => {
-  const { dataset, currentDay } = useForest();
+  const { dataset, currentDay, scenario, dataSourceMode, dataSourceInfo } = useForest();
 
   // Downsample to weekly or 15-day intervals for clean bar/line chart
   // Pick every 3rd day to display 30 distinct points across the 90 days
@@ -185,10 +185,22 @@ export const WeatherContextCard: React.FC = () => {
         </svg>
       </div>
 
-      {/* Provenance footer */}
-      <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-[#8A9A92]">
-        <span>Data Source: BME280 In-Situ + Watershed Met Station</span>
-        <span>Observation Cycle: 2026-08-01 &rarr; {currentDay?.dateString}</span>
+      {/* Provenance footer & Scientific Caveat */}
+      <div className="pt-3 border-t border-white/[0.06] space-y-1.5 text-[11px] font-mono">
+        <div className="flex flex-wrap items-center justify-between text-[#8A9A92] gap-2">
+          <span>
+            Data Source:{' '}
+            <strong className="text-white">
+              {dataSourceMode === 'simulated'
+                ? `Simulated Microclimate Model (${scenario}) · Demo Scenario`
+                : `Uploaded Station Records (${dataSourceInfo.sourceName})`}
+            </strong>
+          </span>
+          <span>Observation Cycle: 2026-08-01 &rarr; {currentDay?.dateString}</span>
+        </div>
+        <p className="text-[10px] font-sans text-[#8A9A92]/80 leading-tight">
+          * Weather parameters provide environmental context only and do not establish causation of vegetation index shifts.
+        </p>
       </div>
     </div>
   );

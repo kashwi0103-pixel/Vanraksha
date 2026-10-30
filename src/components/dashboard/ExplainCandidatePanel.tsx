@@ -172,102 +172,126 @@ export const ExplainCandidatePanel: React.FC<ExplainCandidatePanelProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* NDVI Card */}
           <div className="p-3.5 rounded-xl bg-[#030906]/80 border border-white/10 flex flex-col justify-between">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="font-mono text-xs font-bold text-white">
-                {scorecard.ndvi.title}
-              </span>
-              {renderStatusBadge(scorecard.ndvi.status)}
-            </div>
-            <div className="space-y-1 text-xs font-mono mb-2">
-              <div className="flex justify-between text-[#8A9A92]">
-                <span>Measured Change:</span>
-                <span className={`font-bold ${scorecard.ndvi.isBreached ? 'text-[#E5533D]' : 'text-white'}`}>
-                  {scorecard.ndvi.measuredChangeText}
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="font-mono text-xs font-bold text-white">
+                  {scorecard.ndvi.title}
                 </span>
+                {renderStatusBadge(scorecard.ndvi.status)}
               </div>
-              <div className="flex justify-between text-[#8A9A92] text-[11px]">
-                <span>Screening Threshold:</span>
-                <span className="text-[#B6F36A] font-semibold">{scorecard.ndvi.configuredThresholdText}</span>
+              <div className="space-y-1 text-xs font-mono mb-2">
+                <div className="flex justify-between text-[#8A9A92]">
+                  <span>Measured Change:</span>
+                  <span className={`font-bold ${scorecard.ndvi.isBreached ? 'text-[#E5533D]' : 'text-white'}`}>
+                    {scorecard.ndvi.measuredChangeText}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[#8A9A92] text-[11px]">
+                  <span>Screening Threshold:</span>
+                  <span className="text-[#B6F36A] font-semibold">{scorecard.ndvi.configuredThresholdText}</span>
+                </div>
               </div>
+              <p className="text-[11px] font-sans text-[#8A9A92] leading-relaxed pt-2 border-t border-white/5">
+                {scorecard.ndvi.explanation}
+              </p>
             </div>
-            <p className="text-[11px] font-sans text-[#8A9A92] leading-relaxed pt-2 border-t border-white/5">
-              {scorecard.ndvi.explanation}
-            </p>
+            <div className="text-[10px] font-mono text-[#8A9A92]/60 pt-2 mt-2 flex items-center justify-between border-t border-white/5">
+              <span>Source: Candidate demo raster</span>
+              <span>Sentinel-2 MSI</span>
+            </div>
           </div>
 
           {/* NDMI Card */}
           <div className="p-3.5 rounded-xl bg-[#030906]/80 border border-white/10 flex flex-col justify-between">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="font-mono text-xs font-bold text-white">
-                {scorecard.ndmi.title}
-              </span>
-              {renderStatusBadge(scorecard.ndmi.status)}
-            </div>
-            <div className="space-y-1 text-xs font-mono mb-2">
-              <div className="flex justify-between text-[#8A9A92]">
-                <span>Measured Change:</span>
-                <span className={`font-bold ${scorecard.ndmi.isBreached ? 'text-[#E5533D]' : 'text-white'}`}>
-                  {scorecard.ndmi.measuredChangeText}
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="font-mono text-xs font-bold text-white">
+                  {scorecard.ndmi.title}
                 </span>
+                {renderStatusBadge(scorecard.ndmi.status)}
               </div>
-              <div className="flex justify-between text-[#8A9A92] text-[11px]">
-                <span>Screening Threshold:</span>
-                <span className="text-[#B6F36A] font-semibold">{scorecard.ndmi.configuredThresholdText}</span>
+              <div className="space-y-1 text-xs font-mono mb-2">
+                <div className="flex justify-between text-[#8A9A92]">
+                  <span>Measured Change:</span>
+                  <span className={`font-bold ${scorecard.ndmi.isBreached ? 'text-[#E5533D]' : 'text-white'}`}>
+                    {scorecard.ndmi.measuredChangeText}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[#8A9A92] text-[11px]">
+                  <span>Screening Threshold:</span>
+                  <span className="text-[#B6F36A] font-semibold">{scorecard.ndmi.configuredThresholdText}</span>
+                </div>
               </div>
+              <p className="text-[11px] font-sans text-[#8A9A92] leading-relaxed pt-2 border-t border-white/5">
+                {scorecard.ndmi.explanation}
+              </p>
             </div>
-            <p className="text-[11px] font-sans text-[#8A9A92] leading-relaxed pt-2 border-t border-white/5">
-              {scorecard.ndmi.explanation}
-            </p>
+            <div className="text-[10px] font-mono text-[#8A9A92]/60 pt-2 mt-2 flex items-center justify-between border-t border-white/5">
+              <span>Source: Candidate demo raster</span>
+              <span>Sentinel-2 MSI</span>
+            </div>
           </div>
 
           {/* Tree-Cover Probability Card */}
           <div className="p-3.5 rounded-xl bg-[#030906]/80 border border-white/10 flex flex-col justify-between">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="font-mono text-xs font-bold text-white">
-                {scorecard.treeCover.title}
-              </span>
-              {renderStatusBadge(scorecard.treeCover.status)}
-            </div>
-            <div className="space-y-1 text-xs font-mono mb-2">
-              <div className="flex justify-between text-[#8A9A92]">
-                <span>Measured Change:</span>
-                <span className="text-[#8A9A92] font-semibold italic">
-                  {scorecard.treeCover.measuredChangeText}
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="font-mono text-xs font-bold text-white">
+                  {scorecard.treeCover.title}
                 </span>
+                {renderStatusBadge(scorecard.treeCover.status)}
               </div>
-              <div className="flex justify-between text-[#8A9A92] text-[11px]">
-                <span>Screening Threshold:</span>
-                <span className="text-[#8A9A92] font-semibold">{scorecard.treeCover.configuredThresholdText}</span>
+              <div className="space-y-1 text-xs font-mono mb-2">
+                <div className="flex justify-between text-[#8A9A92]">
+                  <span>Measured Change:</span>
+                  <span className="text-[#8A9A92] font-semibold italic">
+                    {scorecard.treeCover.measuredChangeText}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[#8A9A92] text-[11px]">
+                  <span>Screening Threshold:</span>
+                  <span className="text-[#8A9A92] font-semibold">{scorecard.treeCover.configuredThresholdText}</span>
+                </div>
               </div>
+              <p className="text-[11px] font-sans text-[#8A9A92] leading-relaxed pt-2 border-t border-white/5">
+                {scorecard.treeCover.explanation}
+              </p>
             </div>
-            <p className="text-[11px] font-sans text-[#8A9A92] leading-relaxed pt-2 border-t border-white/5">
-              {scorecard.treeCover.explanation}
-            </p>
+            <div className="text-[10px] font-mono text-[#8A9A92]/60 pt-2 mt-2 flex items-center justify-between border-t border-white/5">
+              <span>Source: Data unavailable</span>
+              <span>Model not run</span>
+            </div>
           </div>
 
           {/* Weather Context Card */}
           <div className="p-3.5 rounded-xl bg-[#030906]/80 border border-white/10 flex flex-col justify-between">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="font-mono text-xs font-bold text-white">
-                {scorecard.weather.title}
-              </span>
-              {renderStatusBadge(scorecard.weather.status)}
-            </div>
-            <div className="space-y-1 text-xs font-mono mb-2">
-              <div className="flex justify-between text-[#8A9A92]">
-                <span>Weather Variance:</span>
-                <span className="text-white font-semibold">
-                  {scorecard.weather.measuredChangeText}
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="font-mono text-xs font-bold text-white">
+                  {scorecard.weather.title}
                 </span>
+                {renderStatusBadge(scorecard.weather.status)}
               </div>
-              <div className="flex justify-between text-[#8A9A92] text-[11px]">
-                <span>Screening Threshold:</span>
-                <span className="text-[#B6F36A] font-semibold">{scorecard.weather.configuredThresholdText}</span>
+              <div className="space-y-1 text-xs font-mono mb-2">
+                <div className="flex justify-between text-[#8A9A92]">
+                  <span>Weather Variance:</span>
+                  <span className="text-white font-semibold">
+                    {scorecard.weather.measuredChangeText}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[#8A9A92] text-[11px]">
+                  <span>Screening Threshold:</span>
+                  <span className="text-[#B6F36A] font-semibold">{scorecard.weather.configuredThresholdText}</span>
+                </div>
               </div>
+              <p className="text-[11px] font-sans text-[#8A9A92] leading-relaxed pt-2 border-t border-white/5">
+                {scorecard.weather.explanation}
+              </p>
             </div>
-            <p className="text-[11px] font-sans text-[#8A9A92] leading-relaxed pt-2 border-t border-white/5">
-              {scorecard.weather.explanation}
-            </p>
+            <div className="text-[10px] font-mono text-[#8A9A92]/60 pt-2 mt-2 flex items-center justify-between border-t border-white/5">
+              <span>Source: Demo meteorological context</span>
+              <span>No causation inferred</span>
+            </div>
           </div>
         </div>
       </div>

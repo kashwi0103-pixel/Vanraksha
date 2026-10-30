@@ -47,13 +47,42 @@ export interface PotentialChangeCandidate {
   mapCoordinates: { x: number; y: number }; // Relative coordinates for satellite canvas
 }
 
-/** Configured screening thresholds */
+/**
+ * Original Candidate-Generation Screening Thresholds (Satellite Analysis Pipeline)
+ * The satellite change-detection pipeline flags potential change candidates when:
+ * - NDVI change < -0.05
+ * - NDMI change < -0.05
+ * - Tree-class probability change < -0.05
+ */
+export const CANDIDATE_SCREENING_THRESHOLDS = {
+  ndviChangeThreshold: -0.05, // Delta < -0.05 flags vegetation-greenness drop
+  ndmiChangeThreshold: -0.05, // Delta < -0.05 flags canopy-moisture drop
+  treeCoverChangeThreshold: -0.05, // Delta < -0.05 flags tree-cover class probability drop (when model active)
+};
+
+/**
+ * Catchment Decision-Support Rule-Engine Thresholds (Local In-Situ Sensor Triage)
+ * Distinct from candidate screening: used for catchment-level alert escalation and sensor gating
+ */
+export const CATCHMENT_RULE_THRESHOLDS = {
+  satelliteDropDeltaThreshold: 0.12, // Relative drop >= 0.12 vs seasonal baseline
+  soilMoistureThresholdPct: 22.0, // Calibrated soil moisture < 22%
+  tempBaselineDeltaThresholdC: 4.0, // Delta >= +4.0°C above seasonal baseline
+  rainfallMaxCumulativeDryMm: 5.0, // Cumulative rain <= 5.0 mm in dry window
+  weatherLookbackDays: 7,
+};
+
+/**
+ * Configured preliminary screening thresholds for potential change candidate evaluation
+ * Aligned with original satellite candidate-generation pipeline:
+ * NDVI drop > 0.05 (delta < -0.05), NDMI drop > 0.05 (delta < -0.05), Tree-cover drop > 0.05 (delta < -0.05)
+ */
 export const SCREENING_THRESHOLDS = {
-  ndviDrop: 0.12, // Delta <= -0.12 triggers vegetation greenness alert
-  ndmiDrop: 0.10, // Delta <= -0.10 triggers canopy moisture alert
-  treeCoverDrop: 0.15, // Delta <= -0.15 triggers class probability drop (when model active)
-  tempDeltaAlert: 4.0, // Delta >= +4.0 C above seasonal baseline
-  rainfallDeficitMm: 15.0, // Cumulative deficit > 15 mm between windows
+  ndviDrop: 0.05, // Delta <= -0.05 triggers vegetation greenness flag
+  ndmiDrop: 0.05, // Delta <= -0.05 triggers canopy moisture flag
+  treeCoverDrop: 0.05, // Delta <= -0.05 triggers tree-cover probability drop flag
+  tempDeltaAlert: 4.0, // Delta >= +4.0°C above seasonal baseline (environmental context)
+  rainfallDeficitMm: 15.0, // Cumulative deficit > 15 mm between windows (environmental context)
 };
 
 /**
@@ -85,8 +114,8 @@ export function buildCandidateScorecard(
       ndviStatus = 'Decreased';
       ndviBreached = true;
       breachedCount++;
-      ndviExplanation = `The observed vegetation-greenness signal decreased from ${t1.ndvi.toFixed(2)} to ${t2.ndvi.toFixed(2)} (measured change: ${delta.toFixed(2)}, crossing the configured screening threshold of -${thresholds.ndviDrop.toFixed(2)}). This reflects a reduction in near-infrared canopy chlorophyll reflectance.`;
-      whyFlagged.push(`Vegetation-greenness (NDVI) dropped by ${Math.abs(delta).toFixed(2)}, crossing the -${thresholds.ndviDrop.toFixed(2)} screening threshold.`);
+      ndviExplanation = `The observed vegetation-greenness signal decreased from ${t1.ndvi.toFixed(2)} to ${t2.ndvi.toFixed(2)} (measured change: ${delta >= 0 ? '+' : ''}${delta.toFixed(2)}, crossing the configured candidate-generation screening threshold of -${thresholds.ndviDrop.toFixed(2)}). This reflects a reduction in near-infrared canopy chlorophyll reflectance.`;
+      whyFlagged.push(`Vegetation-greenness (NDVI) dropped by ${Math.abs(delta).toFixed(2)}, crossing the -${thresholds.ndviDrop.toFixed(2)} candidate-generation screening threshold.`);
     } else {
       ndviStatus = 'No threshold breach';
       ndviExplanation = `Measured NDVI changed from ${t1.ndvi.toFixed(2)} to ${t2.ndvi.toFixed(2)} (change: ${delta >= 0 ? '+' : ''}${delta.toFixed(2)}), remaining within the nominal seasonal screening envelope without breaching the -${thresholds.ndviDrop.toFixed(2)} threshold.`;
@@ -106,18 +135,18 @@ export function buildCandidateScorecard(
       ndmiStatus = 'Decreased';
       ndmiBreached = true;
       breachedCount++;
-      ndmiExplanation = `The moisture-related vegetation signal decreased from ${t1.ndmi.toFixed(2)} to ${t2.ndmi.toFixed(2)} (measured change: ${delta.toFixed(2)}, crossing the configured screening threshold of -${thresholds.ndmiDrop.toFixed(2)}). This indicates significant leaf and canopy water content depletion in the SWIR spectral band.`;
-      whyFlagged.push(`Moisture-related vegetation signal (NDMI) dropped by ${Math.abs(delta).toFixed(2)}, crossing the -${thresholds.ndmiDrop.toFixed(2)} screening threshold.`);
+      ndmiExplanation = `The moisture-related vegetation signal decreased from ${t1.ndmi.toFixed(2)} to ${t2.ndmi.toFixed(2)} (measured change: ${delta >= 0 ? '+' : ''}${delta.toFixed(2)}, crossing the configured candidate-generation screening threshold of -${thresholds.ndmiDrop.toFixed(2)}). This indicates significant leaf and canopy water content depletion in the SWIR spectral band.`;
+      whyFlagged.push(`Moisture-related vegetation signal (NDMI) dropped by ${Math.abs(delta).toFixed(2)}, crossing the -${thresholds.ndmiDrop.toFixed(2)} candidate-generation screening threshold.`);
     } else {
       ndmiStatus = 'No threshold breach';
-      ndmiExplanation = `Measured NDMI shifted from ${t1.ndmi.toFixed(2)} to ${t2.ndmi.toFixed(2)} (change: ${delta >= 0 ? '+' : ''}${delta.toFixed(2)}), showing no critical breach of the -${thresholds.ndmiDrop.toFixed(2)} canopy moisture threshold.`;
+      ndmiExplanation = `Measured NDMI shifted from ${t1.ndmi.toFixed(2)} to ${t2.ndmi.toFixed(2)} (change: ${delta >= 0 ? '+' : ''}${delta.toFixed(2)}), showing no breach of the -${thresholds.ndmiDrop.toFixed(2)} canopy moisture screening threshold.`;
     }
   }
 
   // 3. Tree-Cover Probability Indicator
   let treeCoverStatus: ScorecardStatus = 'Unavailable';
   let treeCoverChangeText = 'Data unavailable';
-  let treeCoverExplanation = 'Candidate-level tree-cover probability is unavailable. No multi-temporal tree-cover classification model was executed on this candidate; study-area averages are excluded to preserve localized precision.';
+  let treeCoverExplanation = 'Candidate-level tree-cover probability is unavailable (Data unavailable). No multi-temporal tree-cover classification model was executed on this candidate; study-area averages are excluded to preserve localized precision. Pipeline screening threshold is Δ < -0.05.';
   let treeCoverBreached = false;
 
   if (t1.treeCoverProbability !== null && t2.treeCoverProbability !== null) {
@@ -149,10 +178,10 @@ export function buildCandidateScorecard(
     
     if (tempDiff >= thresholds.tempDeltaAlert || rainDiff <= -thresholds.rainfallDeficitMm) {
       weatherBreached = true;
-      weatherExplanation = `During the observation periods, precipitation dropped by ${Math.abs(rainDiff)} mm (from ${t1.rainfallMm} mm to ${t2.rainfallMm} mm) while ambient temperatures increased by ${tempDiff >= 0 ? '+' : ''}${tempDiff}°C (from ${t1.temperatureC}°C to ${t2.temperatureC}°C), compounding evaporative demand and moisture loss.`;
-      whyFlagged.push(`Atmospheric drying: Rainfall deficit of ${Math.abs(rainDiff)} mm coupled with a +${tempDiff}°C temperature surge.`);
+      weatherExplanation = `During the observation periods, precipitation dropped by ${Math.abs(rainDiff)} mm (from ${t1.rainfallMm} mm to ${t2.rainfallMm} mm) while ambient temperatures increased by ${tempDiff >= 0 ? '+' : ''}${tempDiff}°C (from ${t1.temperatureC}°C to ${t2.temperatureC}°C), reflecting heightened evaporative demand. Note: Weather observations provide environmental context only and do not establish that weather caused the observed vegetation changes.`;
+      whyFlagged.push(`Atmospheric drying context: Rainfall deficit of ${Math.abs(rainDiff)} mm with a +${tempDiff}°C temperature surge.`);
     } else {
-      weatherExplanation = `Precipitation shifted from ${t1.rainfallMm} mm to ${t2.rainfallMm} mm (${rainDiff >= 0 ? '+' : ''}${rainDiff} mm) and temperature shifted from ${t1.temperatureC}°C to ${t2.temperatureC}°C (${tempDiff >= 0 ? '+' : ''}${tempDiff}°C), maintaining contextual meteorological equilibrium.`;
+      weatherExplanation = `Precipitation shifted from ${t1.rainfallMm} mm to ${t2.rainfallMm} mm (${rainDiff >= 0 ? '+' : ''}${rainDiff} mm) and temperature shifted from ${t1.temperatureC}°C to ${t2.temperatureC}°C (${tempDiff >= 0 ? '+' : ''}${tempDiff}°C), maintaining contextual meteorological equilibrium. Note: Weather observations provide environmental context only and do not infer causation.`;
     }
   }
 
@@ -160,7 +189,7 @@ export function buildCandidateScorecard(
   if (breachedCount >= 2) {
     whyFlagged.unshift(`Multiple independent signals (${breachedCount} threshold breaches) support prioritizing this location for investigation.`);
   } else if (breachedCount === 1) {
-    whyFlagged.unshift('Single indicator crossed the screening threshold; warrants continuous monitoring and verification.');
+    whyFlagged.unshift('Single indicator crossed the candidate-generation screening threshold; warrants continuous monitoring and verification.');
   } else if (whyFlagged.length === 0) {
     whyFlagged.push('No screening thresholds breached; baseline monitoring active.');
   }
@@ -168,11 +197,11 @@ export function buildCandidateScorecard(
   // Overall Interpretation (Clearly distinguishing measured changes from interpretations & non-deforestation disclaimer)
   let interpretationText = '';
   if (breachedCount >= 2) {
-    interpretationText = 'Measured multi-spectral reflectance and meteorological trends indicate significant localized canopy desiccation. Crucially, these signals do not prove deforestation. Seasonal phenological transitions, soil moisture heterogeneity across slopes, micro-site exposure, and cloud or shadow edge artifacts can influence the spectral response. Ground-level physical verification is required before operational dispatch.';
+    interpretationText = 'Measured multi-spectral reflectance and meteorological trends indicate significant localized canopy desiccation with changes exceeding the -0.05 candidate-generation threshold. Crucially, these signals do not prove deforestation. Seasonal phenological transitions, soil moisture heterogeneity across mountain slopes, micro-site exposure, and cloud or shadow edge artifacts can influence the spectral response. Ground-level physical verification is required before operational dispatch.';
   } else if (breachedCount === 1) {
-    interpretationText = 'The candidate exhibits a localized spectral divergence in a single indicator. This does not confirm forest degradation or tree loss. Normal seasonal leaf shedding (phenology) in deciduous Chir Pine or Sal stands, localized topographic shadowing, or transient weather patterns frequently produce comparable single-band variations.';
+    interpretationText = 'The candidate exhibits a localized spectral divergence in a single indicator crossing the -0.05 threshold. This does not confirm forest degradation or tree loss. Normal seasonal leaf shedding (phenology) in deciduous Chir Pine or Sal stands, localized topographic shadowing, or transient weather patterns frequently produce comparable single-band variations.';
   } else {
-    interpretationText = 'Candidate displays nominal biophysical measurements within baseline tolerance limits. Observations reflect standard seasonal dynamics without persistent stress signatures.';
+    interpretationText = 'Candidate displays nominal biophysical measurements within baseline tolerance limits (changes within ±0.05). Observations reflect standard seasonal dynamics without persistent stress signatures.';
   }
 
   // Recommended next step
@@ -185,7 +214,7 @@ export function buildCandidateScorecard(
         title: 'NDVI (Vegetation Greenness)',
         status: ndviStatus,
         measuredChangeText: ndviChangeText,
-        configuredThresholdText: `Threshold: Δ ≤ -${thresholds.ndviDrop.toFixed(2)}`,
+        configuredThresholdText: `Threshold: Δ < -0.05 (Preliminary Pipeline)`,
         isBreached: ndviBreached,
         explanation: ndviExplanation,
       },
@@ -194,7 +223,7 @@ export function buildCandidateScorecard(
         title: 'NDMI (Canopy Moisture)',
         status: ndmiStatus,
         measuredChangeText: ndmiChangeText,
-        configuredThresholdText: `Threshold: Δ ≤ -${thresholds.ndmiDrop.toFixed(2)}`,
+        configuredThresholdText: `Threshold: Δ < -0.05 (Preliminary Pipeline)`,
         isBreached: ndmiBreached,
         explanation: ndmiExplanation,
       },
@@ -203,7 +232,7 @@ export function buildCandidateScorecard(
         title: 'Tree-Cover Probability',
         status: treeCoverStatus,
         measuredChangeText: treeCoverChangeText,
-        configuredThresholdText: `Threshold: Δ ≤ -${(thresholds.treeCoverDrop * 100).toFixed(0)}% (Model inactive)`,
+        configuredThresholdText: `Threshold: Δ < -0.05 (Model inactive / Data unavailable)`,
         isBreached: treeCoverBreached,
         explanation: treeCoverExplanation,
       },
@@ -212,7 +241,7 @@ export function buildCandidateScorecard(
         title: 'Weather Context (Rain & Temp)',
         status: weatherStatus,
         measuredChangeText: weatherChangeText,
-        configuredThresholdText: `Threshold: ΔTemp ≥ +${thresholds.tempDeltaAlert.toFixed(1)}°C / Rain Deficit`,
+        configuredThresholdText: `Contextual meteorological baseline`,
         isBreached: weatherBreached,
         explanation: weatherExplanation,
       },
@@ -280,8 +309,8 @@ export const POTENTIAL_CHANGE_CANDIDATES: PotentialChangeCandidate[] = [
     const t2: ObservationPeriodData = {
       periodLabel: 'Current Pass (T2)',
       date: '2026-05-15',
-      ndvi: 0.62, // drop -0.08 (does not breach -0.12 threshold)
-      ndmi: 0.20, // drop -0.12 (breaches -0.10 threshold)
+      ndvi: 0.62, // drop -0.08 (breaches -0.05 candidate-generation screening threshold)
+      ndmi: 0.20, // drop -0.12 (breaches -0.05 candidate-generation screening threshold)
       treeCoverProbability: null,
       rainfallMm: 2.5,
       temperatureC: 34.8,

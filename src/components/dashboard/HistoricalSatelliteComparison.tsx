@@ -527,7 +527,7 @@ export const HistoricalSatelliteComparison: React.FC = () => {
               Potential Change Candidates
             </h3>
             <p className="text-xs sm:text-sm text-[#A0B0A7] mt-1 max-w-3xl leading-relaxed">
-              The automated screening workflow flags locations exhibiting persistent changes in multiple satellite indicators (NDVI greenness loss, NDMI moisture stress, and tree-cover probability shifts) between observation epochs for prioritised investigation.
+              The automated screening workflow flags locations where satellite indicators cross configured preliminary change thresholds (NDVI change &lt; -0.05, NDMI change &lt; -0.05, and tree-class probability change &lt; -0.05) between observation epochs (October–November 2023 vs 2025) for prioritised investigation.
             </p>
           </div>
 
