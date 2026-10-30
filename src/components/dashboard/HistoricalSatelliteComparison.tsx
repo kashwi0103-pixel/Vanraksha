@@ -101,19 +101,49 @@ export const HistoricalSatelliteComparison: React.FC = () => {
   const updateSliderFromClientX = useCallback((clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
+    if (rect.width <= 0) return;
     const x = clientX - rect.left;
     const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
     setSliderPos(Math.round(percentage * 10) / 10);
   }, []);
 
-  // Mouse interaction handlers
+  // Pointer event handlers with pointer capture support
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Only accept primary button for mouse, or any touch/pen
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Ignore if pointer capture fails
+    }
+    setIsDragging(true);
+    updateSliderFromClientX(e.clientX);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    updateSliderFromClientX(e.clientX);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {
+      // Ignore
+    }
+    setIsDragging(false);
+  };
+
+  // Fallback mouse & touch interaction handlers
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
     e.preventDefault();
     setIsDragging(true);
     updateSliderFromClientX(e.clientX);
   };
 
-  // Touch interaction handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
     if (e.touches[0]) {
@@ -121,40 +151,42 @@ export const HistoricalSatelliteComparison: React.FC = () => {
     }
   };
 
-  // Global mousemove & mouseup listeners
+  // Global window listeners as redundant backup while dragging
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleWindowMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
       updateSliderFromClientX(e.clientX);
     };
 
-    const handleMouseUp = () => {
+    const handleWindowMouseUp = () => {
       if (isDragging) setIsDragging(false);
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
+    const handleWindowTouchMove = (e: TouchEvent) => {
       if (!isDragging) return;
       if (e.touches[0]) {
         updateSliderFromClientX(e.touches[0].clientX);
       }
     };
 
-    const handleTouchEnd = () => {
+    const handleWindowTouchEnd = () => {
       if (isDragging) setIsDragging(false);
     };
 
     if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('touchmove', handleTouchMove);
-      window.addEventListener('touchend', handleTouchEnd);
+      window.addEventListener('mousemove', handleWindowMouseMove);
+      window.addEventListener('mouseup', handleWindowMouseUp);
+      window.addEventListener('touchmove', handleWindowTouchMove, { passive: true });
+      window.addEventListener('touchend', handleWindowTouchEnd);
+      window.addEventListener('touchcancel', handleWindowTouchEnd);
     }
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+      window.removeEventListener('touchmove', handleWindowTouchMove);
+      window.removeEventListener('touchend', handleWindowTouchEnd);
+      window.removeEventListener('touchcancel', handleWindowTouchEnd);
     };
   }, [isDragging, updateSliderFromClientX]);
 
@@ -348,43 +380,23 @@ export const HistoricalSatelliteComparison: React.FC = () => {
             aria-label="Satellite comparison slider"
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-valuenow={sliderPos}
-            onKeyDown={handleKeyDown}
+            aria-valuenow={Math.round(sliderPos)}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
-            className="relative w-full h-[380px] sm:h-[520px] md:h-[620px] rounded-xl overflow-hidden bg-[#030906] border border-white/15 select-none cursor-ew-resize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2ECC71]"
+            onKeyDown={handleKeyDown}
+            className="relative w-full h-[380px] sm:h-[520px] md:h-[620px] rounded-xl overflow-hidden bg-[#030906] border border-white/15 select-none touch-none cursor-ew-resize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2ECC71]"
           >
-            {/* Background Layer: 2025 (After) */}
-            <div className="absolute inset-0 flex items-center justify-center p-2">
-              <img
-                src={imageErrors[`${mode}-after`] ? currentAssets.after.fallback : currentAssets.after.src}
-                alt={currentAssets.after.alt}
-                onError={() => handleImageError(`${mode}-after`)}
-                className="w-full h-full object-contain pointer-events-none select-none"
-              />
-              {imageErrors[`${mode}-after`] && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/60 p-4 text-center">
-                  <div className="max-w-xs p-4 rounded-xl bg-black/80 border border-white/20 text-xs">
-                    <AlertTriangle size={20} className="mx-auto text-[#F5B841] mb-2" />
-                    <p className="text-white font-bold">{currentAssets.after.label}</p>
-                    <p className="text-[#8A9A92] mt-1">Image loaded via secondary fallback buffer.</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Foreground Layer: 2023 (Before) clipped by sliderPos */}
-            <div
-              className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none select-none transition-none"
-              style={{
-                clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)`,
-                WebkitClipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)`,
-              }}
-            >
+            {/* BASE LAYER: 2023 (Before) Observation */}
+            <div className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none select-none">
               <img
                 src={imageErrors[`${mode}-before`] ? currentAssets.before.fallback : currentAssets.before.src}
                 alt={currentAssets.before.alt}
                 onError={() => handleImageError(`${mode}-before`)}
+                draggable={false}
                 className="w-full h-full object-contain pointer-events-none select-none"
               />
               {imageErrors[`${mode}-before`] && (
@@ -398,22 +410,48 @@ export const HistoricalSatelliteComparison: React.FC = () => {
               )}
             </div>
 
+            {/* OVERLAY LAYER: 2025 (After) Observation clipped dynamically */}
+            <div
+              className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none select-none transition-none"
+              style={{
+                clipPath: `inset(0 0 0 ${sliderPos}%)`,
+                WebkitClipPath: `inset(0 0 0 ${sliderPos}%)`,
+              }}
+            >
+              <img
+                src={imageErrors[`${mode}-after`] ? currentAssets.after.fallback : currentAssets.after.src}
+                alt={currentAssets.after.alt}
+                onError={() => handleImageError(`${mode}-after`)}
+                draggable={false}
+                className="w-full h-full object-contain pointer-events-none select-none"
+              />
+              {imageErrors[`${mode}-after`] && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 p-4 text-center">
+                  <div className="max-w-xs p-4 rounded-xl bg-black/80 border border-white/20 text-xs">
+                    <AlertTriangle size={20} className="mx-auto text-[#F5B841] mb-2" />
+                    <p className="text-white font-bold">{currentAssets.after.label}</p>
+                    <p className="text-[#8A9A92] mt-1">Image loaded via secondary fallback buffer.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Floating Year / Period Badges */}
-            <div className="absolute top-4 left-4 z-20 pointer-events-none">
+            <div className="absolute top-4 left-4 z-20 pointer-events-none select-none">
               <div className="px-3 py-1.5 rounded-lg bg-black/80 backdrop-blur-md border border-[#2ECC71]/40 text-xs font-mono font-bold text-white shadow-xl flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#2ECC71] animate-pulse" />
-                <span>2023 · Oct–Nov</span>
+                <span>2023 · Oct–Nov (Before)</span>
               </div>
             </div>
 
-            <div className="absolute top-4 right-4 z-20 pointer-events-none">
+            <div className="absolute top-4 right-4 z-20 pointer-events-none select-none">
               <div className="px-3 py-1.5 rounded-lg bg-black/80 backdrop-blur-md border border-[#38BDF8]/40 text-xs font-mono font-bold text-white shadow-xl flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
-                <span>2025 · Oct–Nov</span>
+                <span>2025 · Oct–Nov (After)</span>
               </div>
             </div>
 
-            {/* Vertical Divider Line */}
+            {/* Vertical Divider Line & Interactive Handle aligned to sliderPos */}
             <div
               className="absolute top-0 bottom-0 z-30 pointer-events-none"
               style={{ left: `${sliderPos}%` }}
@@ -422,7 +460,10 @@ export const HistoricalSatelliteComparison: React.FC = () => {
               <div className="absolute -left-[1px] top-0 bottom-0 w-[2px] bg-white shadow-[0_0_12px_rgba(255,255,255,0.7)]" />
 
               {/* Slider Handle Grip */}
-              <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white text-black shadow-2xl flex items-center justify-center border-2 border-[#0A1F13] cursor-ew-resize hover:scale-110 active:scale-95 transition-transform pointer-events-auto">
+              <div
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white text-black shadow-2xl flex items-center justify-center border-2 border-[#0A1F13] cursor-ew-resize hover:scale-110 active:scale-95 transition-transform"
+                style={{ pointerEvents: 'none' }}
+              >
                 <div className="flex items-center -space-x-1">
                   <ChevronLeft size={16} strokeWidth={3} className="text-black" />
                   <ChevronRight size={16} strokeWidth={3} className="text-black" />
@@ -430,7 +471,7 @@ export const HistoricalSatelliteComparison: React.FC = () => {
               </div>
 
               {/* Slider Percentage Tag */}
-              <div className="absolute bottom-4 -translate-x-1/2 px-2 py-0.5 rounded bg-black/90 border border-white/20 text-[10px] font-mono font-bold text-white whitespace-nowrap shadow-md pointer-events-none">
+              <div className="absolute bottom-4 -translate-x-1/2 px-2 py-0.5 rounded bg-black/90 border border-white/20 text-[10px] font-mono font-bold text-white whitespace-nowrap shadow-md pointer-events-none select-none">
                 {Math.round(sliderPos)}% Split
               </div>
             </div>
@@ -452,7 +493,8 @@ export const HistoricalSatelliteComparison: React.FC = () => {
                   src={imageErrors[`${mode}-before`] ? currentAssets.before.fallback : currentAssets.before.src}
                   alt={currentAssets.before.alt}
                   onError={() => handleImageError(`${mode}-before`)}
-                  className="w-full h-full object-contain"
+                  draggable={false}
+                  className="w-full h-full object-contain select-none"
                 />
               </div>
             </div>
@@ -471,7 +513,8 @@ export const HistoricalSatelliteComparison: React.FC = () => {
                   src={imageErrors[`${mode}-after`] ? currentAssets.after.fallback : currentAssets.after.src}
                   alt={currentAssets.after.alt}
                   onError={() => handleImageError(`${mode}-after`)}
-                  className="w-full h-full object-contain"
+                  draggable={false}
+                  className="w-full h-full object-contain select-none"
                 />
               </div>
             </div>
@@ -485,21 +528,33 @@ export const HistoricalSatelliteComparison: React.FC = () => {
             <button
               type="button"
               onClick={() => setSliderPos(20)}
-              className="px-2 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-white font-bold"
+              className={`px-2.5 py-1 rounded transition-colors ${
+                Math.round(sliderPos) === 20
+                  ? 'bg-[#38BDF8]/25 text-[#38BDF8] border border-[#38BDF8]/40 font-bold'
+                  : 'bg-white/[0.04] hover:bg-white/10 text-white font-bold'
+              }`}
             >
               20% (More 2025)
             </button>
             <button
               type="button"
               onClick={() => setSliderPos(50)}
-              className="px-2 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-[#2ECC71] font-bold"
+              className={`px-2.5 py-1 rounded transition-colors ${
+                Math.round(sliderPos) === 50
+                  ? 'bg-[#2ECC71]/25 text-[#2ECC71] border border-[#2ECC71]/40 font-bold'
+                  : 'bg-white/[0.04] hover:bg-white/10 text-[#2ECC71] font-bold'
+              }`}
             >
               50% (Centered)
             </button>
             <button
               type="button"
               onClick={() => setSliderPos(80)}
-              className="px-2 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-white font-bold"
+              className={`px-2.5 py-1 rounded transition-colors ${
+                Math.round(sliderPos) === 80
+                  ? 'bg-[#B6F36A]/25 text-[#B6F36A] border border-[#B6F36A]/40 font-bold'
+                  : 'bg-white/[0.04] hover:bg-white/10 text-white font-bold'
+              }`}
             >
               80% (More 2023)
             </button>
