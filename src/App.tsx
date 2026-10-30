@@ -10,6 +10,7 @@ import { Footer } from './components/Footer';
 import { DebugPanel } from './components/DebugPanel';
 import { ToastNotification } from './components/ToastNotification';
 import { DataDrawer } from './components/DataDrawer';
+import { Preloader } from './components/Preloader';
 import { HomeSection } from './pages/HomeSection';
 import { HowItWorksSection } from './pages/HowItWorksSection';
 import { DashboardSection } from './pages/DashboardSection';
@@ -23,6 +24,7 @@ import { SimulationScenario } from './lib/simulator';
 function AppContent() {
   // Starts with 'home' - the "Hear the forest before it shows" screen
   const [activeSection, setActiveSection] = useState<string>('home');
+  const [showPreloader, setShowPreloader] = useState<boolean>(true);
 
   const {
     scenario,
@@ -72,6 +74,11 @@ function AppContent() {
         className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none opacity-20 blur-[140px] bg-gradient-to-b from-[#2ECC71]/30 via-[#0B2E1C]/20 to-transparent -z-10" 
         aria-hidden="true" 
       />
+
+      {/* Vanraksha Boot Preloader with Namaste in Hindi */}
+      {showPreloader && (
+        <Preloader onComplete={() => setShowPreloader(false)} />
+      )}
 
       {/* Primary Sticky Top Bar with Left Hamburger & Logo */}
       <Navbar

@@ -13,16 +13,16 @@ interface PreloaderProps {
 
 export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
-  const [statusText, setStatusText] = useState('Booting Vanraksha Core Engine...');
+  const [statusText, setStatusText] = useState('आरंभ हो रहा है · Booting Vanraksha Engine...');
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isMounted, setIsMounted] = useState(true);
 
   useEffect(() => {
     const steps = [
       { at: 15, text: 'Calibrating Sentinel-2 MSI Multi-Spectral Reflectance...' },
-      { at: 40, text: 'Synchronizing Uttarakhand Division LoRa Telemetry (Corbett)...' },
-      { at: 70, text: 'Computing Root-Zone Capacitance & NDRE Biophysical Indices...' },
-      { at: 92, text: 'Aligning Early-Warning Stress Classification Boundaries...' },
+      { at: 38, text: 'Synchronizing Uttarakhand Division LoRa Telemetry (Corbett & Nainital)...' },
+      { at: 65, text: 'Computing Root-Zone Capacitance & Multi-Temporal NDRE Indices...' },
+      { at: 88, text: 'Aligning Early-Warning Stress Classification Boundaries...' },
       { at: 100, text: 'Vanraksha (वनरक्षा) Intelligence Engine Online' },
     ];
 
@@ -44,7 +44,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
               setIsMounted(false);
               onComplete?.();
             }, 600);
-          }, 350);
+          }, 400);
         }
         return next;
       });
@@ -69,7 +69,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
       aria-live="polite"
       aria-label="Loading Vanraksha Forest Intelligence System"
       onClick={handleSkip}
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#040E08] text-white transition-opacity duration-500 cursor-pointer select-none ${
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#040E08] text-white transition-opacity duration-600 cursor-pointer select-none ${
         isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
@@ -91,9 +91,22 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
           <div className="absolute -inset-8 rounded-full border border-dashed border-[#B6F36A]/20 animate-spin [animation-duration:16s] [animation-direction:reverse]" />
           
           {/* Central Logo */}
-          <div className="relative p-3 rounded-2xl bg-[#06180E] border border-[#2ECC71]/30 shadow-[0_0_35px_rgba(46,204,113,0.3)]">
-            <Logo size={58} showText={false} />
+          <div className="relative p-3.5 rounded-2xl bg-[#06180E] border border-[#2ECC71]/40 shadow-[0_0_40px_rgba(46,204,113,0.35)]">
+            <Logo size={62} showText={false} />
           </div>
+        </div>
+
+        {/* NAMASTE IN HINDI ABOVE VANRAKSHA */}
+        <div className="mb-3 flex flex-col items-center animate-pulse [animation-duration:3s]">
+          <div className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-gradient-to-r from-[#2ECC71]/15 via-[#B6F36A]/20 to-[#2ECC71]/15 border border-[#2ECC71]/40 backdrop-blur-md shadow-[0_0_25px_rgba(46,204,113,0.25)]">
+            <span className="text-xl leading-none select-none" role="img" aria-label="Folded Hands Namaste">🙏</span>
+            <span className="font-heading font-bold text-2xl sm:text-3xl text-white tracking-wide">
+              नमस्ते
+            </span>
+          </div>
+          <span className="text-[11px] font-mono text-[#8A9A92] mt-1.5 tracking-widest uppercase">
+            स्वागतम् · Welcome
+          </span>
         </div>
 
         {/* Brand Name & Devanagari Title */}
@@ -101,7 +114,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
           <h1 className="font-heading font-bold text-3xl sm:text-4xl tracking-tight text-white">
             Vanraksha
           </h1>
-          <span className="text-sm font-mono px-2 py-0.5 rounded-md bg-[#2ECC71]/20 text-[#B6F36A] border border-[#2ECC71]/40 font-semibold shadow-sm">
+          <span className="text-sm font-mono px-2.5 py-0.5 rounded-md bg-[#2ECC71]/20 text-[#B6F36A] border border-[#2ECC71]/40 font-semibold shadow-sm">
             वनरक्षा
           </span>
         </div>
@@ -113,7 +126,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
         {/* Progress Bar Container */}
         <div className="w-full bg-white/[0.06] p-1 rounded-full border border-white/10 mb-4 overflow-hidden relative backdrop-blur-md">
           <div
-            className="h-2 rounded-full bg-gradient-to-r from-[#2ECC71] via-[#B6F36A] to-[#2ECC71] transition-all duration-75 relative shadow-[0_0_12px_rgba(46,204,113,0.5)]"
+            className="h-2 rounded-full bg-gradient-to-r from-[#2ECC71] via-[#B6F36A] to-[#2ECC71] transition-all duration-75 relative shadow-[0_0_15px_rgba(46,204,113,0.6)]"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -140,7 +153,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
           </span>
           <span>·</span>
           <span className="text-[#8A9A92] hover:text-white underline transition-colors">
-            Tap to enter
+            Click anywhere to enter
           </span>
         </div>
       </div>
