@@ -20,7 +20,7 @@ interface MoistureCell {
 }
 
 export const MoistureMonitoringTab: React.FC = () => {
-  const { currentDay, dataset, dayIndex, setActiveDashboardTab } = useForest();
+  const { currentDay, dataset, dayIndex } = useForest();
   const [hoveredCell, setHoveredCell] = useState<MoistureCell | null>(null);
 
   const currentNdmi = currentDay?.ndmi ?? 0.38;
@@ -107,17 +107,10 @@ export const MoistureMonitoringTab: React.FC = () => {
           </h3>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
-          <span className="text-[#8A9A92] hidden sm:inline">Formula: (NIR - SWIR) / (NIR + SWIR)</span>
-          <span className="text-white/20 hidden sm:inline">•</span>
-          <button
-            type="button"
-            onClick={() => setActiveDashboardTab('nainital-change')}
-            className="px-3 py-1.5 rounded-lg bg-[#38BDF8]/15 hover:bg-[#38BDF8]/25 text-[#38BDF8] border border-[#38BDF8]/30 transition-all font-semibold flex items-center gap-1.5"
-          >
-            <Layers size={13} />
-            <span>Nainital 2023 vs 2025 Analysis</span>
-          </button>
+        <div className="flex items-center gap-3 text-xs font-mono">
+          <span className="text-[#8A9A92]">Formula: (NIR - SWIR) / (NIR + SWIR)</span>
+          <span className="text-white/20">•</span>
+          <span className="text-[#38BDF8]">SWIR Band 11 (1,610nm Water Absorption)</span>
         </div>
       </div>
 

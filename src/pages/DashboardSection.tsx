@@ -13,7 +13,6 @@ import { MoistureMonitoringTab } from '../components/dashboard/tabs/MoistureMoni
 import { HistoricalTrendsTab } from '../components/dashboard/tabs/HistoricalTrendsTab';
 import { PotentialHotspotsTab } from '../components/dashboard/tabs/PotentialHotspotsTab';
 import { ReportsTab } from '../components/dashboard/tabs/ReportsTab';
-import { NainitalChangeAnalysisTab } from '../components/dashboard/tabs/NainitalChangeAnalysisTab';
 import { useForest } from '../lib/ForestContext';
 import { 
   Sliders, 
@@ -25,14 +24,12 @@ import {
   Droplets, 
   LineChart, 
   Flame, 
-  FileText,
-  Layers
+  FileText 
 } from 'lucide-react';
 
 export type DashboardTabId = 
   | 'overview' 
   | 'satellite-map' 
-  | 'nainital-change'
   | 'vegetation-health' 
   | 'moisture-monitoring' 
   | 'historical-trends' 
@@ -64,12 +61,6 @@ export const DashboardSection: React.FC = () => {
       label: 'Satellite map',
       icon: MapIcon,
       description: 'Study area ki imagery',
-    },
-    {
-      id: 'nainital-change',
-      label: 'Nainital Satellite Change',
-      icon: Layers,
-      description: 'Historical 2023 vs 2025 satellite comparison & change candidates',
     },
     {
       id: 'vegetation-health',
@@ -184,7 +175,6 @@ export const DashboardSection: React.FC = () => {
         <div className="transition-all duration-300">
           {activeTab === 'overview' && <OverviewTab />}
           {activeTab === 'satellite-map' && <SatelliteMapTab />}
-          {activeTab === 'nainital-change' && <NainitalChangeAnalysisTab />}
           {activeTab === 'vegetation-health' && <VegetationHealthTab />}
           {activeTab === 'moisture-monitoring' && <MoistureMonitoringTab />}
           {activeTab === 'historical-trends' && <HistoricalTrendsTab />}

@@ -13,9 +13,7 @@ import {
   Clock, 
   Satellite, 
   Radio, 
-  Activity,
-  Layers,
-  ArrowRight
+  Activity
 } from 'lucide-react';
 
 const API_BASE = (
@@ -38,7 +36,7 @@ interface ApiObservation {
 }
 
 export const OverviewTab: React.FC = () => {
-  const { currentDay, status, evaluation, dayIndex, dataset, setActiveDashboardTab } = useForest();
+  const { currentDay, status, evaluation, dayIndex, dataset } = useForest();
   const [apiSummary, setApiSummary] = useState<ApiSummary | null>(null);
 const [apiObservations, setApiObservations] = useState<ApiObservation[]>([]);
 const [apiLoading, setApiLoading] = useState(true);
@@ -379,95 +377,6 @@ useEffect(() => {
           <span className="text-[11px] font-mono text-[#8A9A92] block mt-0.5">
             Atmospheric draw
           </span>
-        </div>
-      </div>
-
-      {/* Feature Showcase: Nainital Satellite Change Analysis */}
-      <div className="glass-card p-5 border border-white/10 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-white/10">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#2ECC71]/20 text-[#B6F36A] font-bold">
-                NEW SATELLITE MODULE
-              </span>
-              <span className="text-xs font-mono text-[#8A9A92]">Nainital Forest Division</span>
-            </div>
-            <h4 className="text-lg font-heading font-bold text-white">
-              Nainital Satellite Change Analysis
-            </h4>
-            <p className="text-xs text-[#8A9A92] mt-0.5">
-              Historical multi-temporal comparison between October–November 2023 and 2025, with potential change candidates screening layer.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setActiveDashboardTab('nainital-change')}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2ECC71]/20 hover:bg-[#2ECC71]/30 text-[#B6F36A] border border-[#2ECC71]/40 text-xs font-mono font-bold transition-all shrink-0"
-          >
-            <span>Open Nainital Analysis</span>
-            <ArrowRight size={14} />
-          </button>
-        </div>
-
-        {/* Mini Preview Gallery Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
-          <div 
-            onClick={() => setActiveDashboardTab('nainital-change')}
-            className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[#2ECC71]/40 cursor-pointer transition-all group"
-          >
-            <div className="aspect-[16/10] rounded-lg overflow-hidden bg-black/40 mb-2 border border-white/5">
-              <img
-                src="/Nainital_NDVI.png"
-                alt="NDVI Overview Preview"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-white font-medium">NDVI Comparison</span>
-              <span className="text-[#2ECC71]">2023 vs 2025</span>
-            </div>
-            <span className="text-[11px] text-[#8A9A92] block mt-0.5">Vegetation greenness</span>
-          </div>
-
-          <div 
-            onClick={() => setActiveDashboardTab('nainital-change')}
-            className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[#38BDF8]/40 cursor-pointer transition-all group"
-          >
-            <div className="aspect-[16/10] rounded-lg overflow-hidden bg-black/40 mb-2 border border-white/5">
-              <img
-                src="/Nainital_NDMI.png"
-                alt="NDMI Overview Preview"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-white font-medium">NDMI Comparison</span>
-              <span className="text-[#38BDF8]">2023 vs 2025</span>
-            </div>
-            <span className="text-[11px] text-[#8A9A92] block mt-0.5">Moisture vegetation signal</span>
-          </div>
-
-          <div 
-            onClick={() => setActiveDashboardTab('nainital-change')}
-            className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[#E5533D]/40 cursor-pointer transition-all group"
-          >
-            <div className="aspect-[16/10] rounded-lg overflow-hidden bg-black/40 mb-2 border border-white/5">
-              <img
-                src="/ForestGuardAI_Change_Candidates.png"
-                alt="Change Candidates Preview"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-white font-medium">Change Candidates</span>
-              <span className="text-[#E5533D]">Screening</span>
-            </div>
-            <span className="text-[11px] text-[#8A9A92] block mt-0.5">Flagged for investigation</span>
-          </div>
         </div>
       </div>
 

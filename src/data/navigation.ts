@@ -29,12 +29,6 @@ export const DASHBOARD_NAV_SECTIONS: DashboardNavItem[] = [
     hindiDescription: 'Study area ki imagery',
   },
   {
-    id: 'nainital-change',
-    label: 'Nainital Satellite Change',
-    hindiDescription: '2023 vs 2025 satellite comparison & change candidates',
-    badge: 'NEW',
-  },
-  {
     id: 'vegetation-health',
     label: 'Vegetation health',
     hindiDescription: 'NDVI map aur summary statistics',

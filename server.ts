@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import express, { Request, Response } from 'express';
+import express, { type Request, type Response } from 'express';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import path from 'path';
@@ -12,14 +12,13 @@ import {
   MOCK_OBSERVATIONS,
   MOCK_ALERTS,
   getAlertSummary,
-  AlertLevel,
-} from './src/data/mockApiData';
+  type AlertLevel,
+} from './src/data/mockApiData.ts';
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
-app.use(express.static(path.resolve(process.cwd(), 'public')));
 
 // Server-side Gemini initialization with required User-Agent
 const ai = new GoogleGenAI({

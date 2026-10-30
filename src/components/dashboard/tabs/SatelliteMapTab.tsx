@@ -38,7 +38,7 @@ interface CatchmentZone {
 }
 
 export const SatelliteMapTab: React.FC = () => {
-  const { status, evaluation, setActiveDashboardTab } = useForest();
+  const { status, evaluation } = useForest();
   const [selectedBand, setSelectedBand] = useState<ImageryBand>('nir');
   const [showGrid, setShowGrid] = useState<boolean>(true);
   const [showSensor, setShowSensor] = useState<boolean>(true);
@@ -185,35 +185,6 @@ export const SatelliteMapTab: React.FC = () => {
             <span>Node Pin</span>
           </button>
         </div>
-      </div>
-
-      {/* Nainital Change Analysis Quick Jump Banner */}
-      <div className="p-4 rounded-xl bg-gradient-to-r from-[#2ECC71]/10 via-[#38BDF8]/10 to-transparent border border-[#2ECC71]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#2ECC71]/20 text-[#B6F36A] border border-[#2ECC71]/30 shrink-0">
-            <Layers size={18} />
-          </div>
-          <div>
-            <h4 className="text-sm font-heading font-bold text-white flex items-center gap-2">
-              <span>Nainital Satellite Change Analysis Available</span>
-              <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#2ECC71]/20 text-[#B6F36A]">
-                2023 vs 2025
-              </span>
-            </h4>
-            <p className="text-xs text-[#8A9A92] mt-0.5">
-              Review multi-year NDVI/NDMI historical comparison and potential change candidates screening layer.
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setActiveDashboardTab('nainital-change')}
-          className="px-3.5 py-2 rounded-xl bg-[#2ECC71]/20 hover:bg-[#2ECC71]/30 text-[#B6F36A] border border-[#2ECC71]/40 text-xs font-mono font-semibold transition-all shrink-0 flex items-center gap-1.5 self-start sm:self-auto"
-        >
-          <span>Open Analysis</span>
-          <span aria-hidden="true">→</span>
-        </button>
       </div>
 
       {/* Main Satellite Canvas Stage */}

@@ -1,6 +1,6 @@
 {
-  "name": "ForestGuard AI",
-  "description": "Low-cost forest-stress monitoring and early-warning demonstrator (student prototype, decision-support only).",
+  "name": "Vanraksha",
+  "description": "Vanraksha: Advanced satellite and in-situ early-warning forest moisture and drought stress monitoring for Uttarakhand forest divisions.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -53,7 +53,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     switch (id) {
       case 'overview': return <Activity size={size} />;
       case 'satellite-map': return <MapIcon size={size} />;
-      case 'nainital-change': return <Layers size={size} />;
       case 'vegetation-health': return <Sprout size={size} />;
       case 'moisture-monitoring': return <Droplets size={size} />;
       case 'historical-trends': return <LineChart size={size} />;
